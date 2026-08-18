@@ -17,13 +17,14 @@ Lucas 的产品与研发工具箱。一个 skill，五条子命令。
 
 点名 `/lh` 或意图落到本 skill 时，先做这些（每个会话做一次）：
 
-1. 若用户点了子命令（`strategy`、`prd`、`arch`、`test`、`review`），**必须**接着读对应 `reference/<command>.md`。不要只凭本文件开写。
+1. 若用户点了子命令（`strategy`、`prd`、`arch`、`test`、`review`），**必须**接着读对应 `reference/<command>.md`。不要只凭本文件开写。写作前读 [reference/llm-output.md](reference/llm-output.md)。
 2. 文档落在本文件默认路径。已有同路径文件则接着改，不要另开一套目录。若仓库有 `AGENTS.md`，其中的项目约定优先于本 skill 默认。
 
 ## 共享不变量
 
 每条子命令都适用：
 
+- **LLM 输出**：遵守 [reference/llm-output.md](reference/llm-output.md)（用语；说明设计与实现）。适用于对话与所有子命令产出，**不是** review Conventions 轴。
 - 信息不够先引导提问，禁止空泛输出。
 - 上游变更必须向下游传导（战略 → 画像/旅程 → Stories → PRD → 架构 → 测设 → 测试/代码）。
 - 本 skill 写出的 Markdown（战略、画像/旅程、Backlog、PRD、架构、ADR、测设）顶部 YAML 含 `last_updated`、`status`；有关联 Story 时再加 `related_stories`。Review 报告用自己的报告头，不用这套字段。
@@ -54,7 +55,7 @@ Lucas 的产品与研发工具箱。一个 skill，五条子命令。
 | `prd` | Specify | 画像旅程 / Stories / PRD / 度量 | [reference/prd.md](reference/prd.md) |
 | `arch` | Design | 架构 或 部署/环境 | [reference/arch.md](reference/arch.md) |
 | `test` | Verify | 测设文档 或 写测试 | [reference/test.md](reference/test.md) |
-| `review` | Evaluate | 六轴并行 review，落盘报告 | [reference/review.md](reference/review.md) |
+| `review` | Evaluate | 六轴并行 review，落盘报告（finding 前缀 `D`/`C`/`N`/`T`/`K`/`S`，代码位置为可点击 `#L` 链接） | [reference/review.md](reference/review.md) |
 
 链路：`strategy` → `prd` → `arch` → `test` → 写代码 → `review`。
 
@@ -81,12 +82,12 @@ Lucas 的产品与研发工具箱。一个 skill，五条子命令。
 
 子命令不要再重新走一遍 `/lh` 路由。
 
-## practice/
-
-通用栈规范，**不是**子命令。仅在 `review` 的 Stack / Design 轴，或当前改动就是那一栈时读取：
+## 标准文档（非命令）
 
 | 文件 | 何时读 |
 |---|---|
+| [reference/llm-output.md](reference/llm-output.md) | 始终：对话与任意子命令写作 |
+| [reference/conventions.md](reference/conventions.md) | review Conventions 轴默认清单（薄；项目细则在仓库 `AGENTS.md`） |
 | [practice/yagni.md](practice/yagni.md) | Design 轴；任何实现/评审 |
 | [practice/deep-module.md](practice/deep-module.md) | Design 轴；出现新模块边界时 |
 | [practice/typescript.md](practice/typescript.md) | 改了 TS |
@@ -95,3 +96,5 @@ Lucas 的产品与研发工具箱。一个 skill，五条子命令。
 | [practice/electron.md](practice/electron.md) | 改了 Electron |
 | [practice/logging.md](practice/logging.md) | 改了日志 |
 | [practice/database.md](practice/database.md) | 改了 DB / 迁移 |
+
+`practice/` 是通用栈规范，**不是**子命令。仅在 `review` 的 Stack / Design 轴，或当前改动就是那一栈时读取。
