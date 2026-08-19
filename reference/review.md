@@ -6,7 +6,7 @@
 
 借鉴通用双轴 code-review 的骨架（定基线 → 定范围 → 并行 subagent → 聚合）。轴是 Design / Clean / Conventions / Testing / Stack / Spec。
 
-### 标准源
+## 标准源
 
 默认用本 skill 的 `practice/`、薄默认 [conventions.md](conventions.md) 与 [test.md](test.md)。写作可读性遵守 [llm-output.md](llm-output.md)，**不要**把 LLM 输出约定当成 Conventions 轴评审项。若仓库有 `AGENTS.md`，**Conventions / Design / Clean / Testing / Stack / Spec 以仓库对应节优先**（本仓库命名、目录、日志、迁移细则在 `AGENTS.md` Conventions）。没有 `AGENTS.md` 时 Conventions 用本 skill 默认清单 + logging/database practice。
 
@@ -48,24 +48,26 @@
 - base、diff 命令、commit 列表、变更路径
 - 本轴必读标准文件路径（`practice/` / `test.md`；若有 `AGENTS.md` 则加上对应轴）
 - **强制 Finding 卡片模板**（见「产出格式」）
-- 要求：引用代码前先 `Read` 文件；**位置必须是可点击 Markdown 链接**（见「代码位置链接」）；禁止无行号的一句话结论
+- 要求：引用代码前先 `Read` 文件；**位置必须是可点击 Markdown 链接**（见「代码位置」）；禁止无行号的一句话结论
 - 要求：Finding「现象」与 Architecture Brief **按调用顺序写清**，不默认读者已熟悉 diff 里的文件（见「说明必须可读」）
 
-| 轴 | 名称 | 标准来源 | 焦点 |
-|----|------|----------|------|
-| **A** | Design | `practice/yagni.md`、`practice/deep-module.md`（`AGENTS.md` Design 若有则优先） | **优先：成熟库 / 已有能力能否替代本次自造**；YAGNI、深模块、Legacy 边界、Shotgun / Feature Envy、职责链 |
-| **B** | Clean | 本文件 Smell 基线（`AGENTS.md` Clean 若有则优先） | 坏味道、重复、巨型函数、死代码（**不含**「该用成熟库」——归 Design） |
-| **C** | Conventions | 仓库 `AGENTS.md` Conventions（若有）优先；否则 [conventions.md](conventions.md) + `practice/logging.md` / `database.md` | 命名、目录、日志、迁移（**不含**用语/可读性） |
-| **D** | Testing | [test.md](test.md)（`AGENTS.md` Testing 若有则优先） | 分层、Bugfix 先红测、Mock 边界、测设文档、实现细节锁死 |
-| **E** | Stack | 按 diff 加载 `practice/typescript.md` / `react.md` / `node.md` / `electron.md`（`AGENTS.md` Stack 若有则优先） | 栈实践（含各 practices 文件中的自检约定） |
-| **F** | Spec | 已解析的 PRD/Story/测设/意图（`AGENTS.md` Spec 若有则优先） | 缺实现、做错、scope creep、文档与代码不一致 |
+轴一律用全名指代（`Design`、`Clean`、`Conventions`、`Testing`、`Stack`、`Spec`）。**不要**给轴另编 A–F 字母：`C`、`D` 已被 finding 前缀占用（见「Finding 编号」），两套字母并存会 skip 错轴。
+
+| 轴 | 标准来源 | 焦点 |
+|----|----------|------|
+| **Design** | `practice/yagni.md`、`practice/deep-module.md`（`AGENTS.md` Design 若有则优先） | **优先：成熟库 / 已有能力能否替代本次自造**；YAGNI、深模块、Legacy 边界、Shotgun / Feature Envy、职责链 |
+| **Clean** | 本文件 Smell 基线（`AGENTS.md` Clean 若有则优先） | 坏味道、重复、巨型函数、死代码（**不含**「该用成熟库」——归 Design） |
+| **Conventions** | 仓库 `AGENTS.md` Conventions（若有）优先；否则 [conventions.md](conventions.md) + `practice/logging.md` / `database.md` | 命名、目录、日志、迁移（**不含**用语/可读性） |
+| **Testing** | [test.md](test.md)（`AGENTS.md` Testing 若有则优先） | 分层、Bugfix 先红测、Mock 边界、测设文档、实现细节锁死 |
+| **Stack** | 按 diff 加载 `practice/typescript.md` / `react.md` / `node.md` / `electron.md`（`AGENTS.md` Stack 若有则优先） | 栈实践（含各 practices 文件中的自检约定） |
+| **Spec** | 已解析的 PRD/Story/测设/意图（`AGENTS.md` Spec 若有则优先） | 缺实现、做错、scope creep、文档与代码不一致 |
 
 #### 折叠规则（父 agent 决定，须写入报告）
 
-- 无测试改动且非 Bugfix / 新功能 → 可 skip **D**
-- 仅 `docs/` → 主要跑 **F**（+ 必要时 C）
-- 无 TS/React/Node/Electron 生产代码 → 可 skip **E**
-- 极小单文件样式改动 → 可将 A+B 合并为一次，但仍用 Design/Clean 两类输出
+- 无测试改动且非 Bugfix / 新功能 → 可 skip **Testing**
+- 仅 `docs/` → 主要跑 **Spec**（必要时加 **Conventions**）
+- 无 TS/React/Node/Electron 生产代码 → 可 skip **Stack**
+- 极小单文件样式改动 → 可把 **Design + Clean** 合并为一个 subagent，但输出仍分 Design / Clean 两类
 
 ### 4. 聚合并落盘
 
@@ -103,29 +105,53 @@
 - 轴内 subagent 可用临时 `D-1`；**落盘前必须换成 `D-01` 这种两位**
 - 改编号规则时：旧报告可保留历史 ID；新报告与追加卡片用新前缀。若用户要求统一旧报告，可原地改 ID / 锚点，但**不得删卡片正文**。
 
-## 代码位置链接
+## 代码位置（必须可点击、必须有行号）
 
-报告写在 `docs/reviews/`。位置字段必须是 **相对仓库根的 Markdown 链接**，带 `#L` 行锚点，预览/IDE 可点进源文件：
+报告写在 `docs/reviews/`。位置字段是**相对仓库根的 Markdown 链接**，显示文本统一写 `完整路径:起始行-结束行`：
 
 ```markdown
-[datasetDataStore.ts:606-635](../../backend/modules/datasets/datasetDataStore.ts#L606-L635)
+[backend/modules/datasets/datasetDataStore.ts:606-635](../../backend/modules/datasets/datasetDataStore.ts#L606)
 ```
 
-规则：
+链接规则：
 
-- 单行：`#L200`；闭区间：`#L200-L204`（GitHub / Cursor / VS Code 预览均可跳行）
-- 链接文字：`文件名:start-end`（不要只写路径、不要只写 `` `start:end:path` ``）
-- 从 `docs/reviews/*.md` 出发的相对路径：
+- **锚点只写单行**：单行位点 `#L200`，区间位点写起始行 `#L606`，区间范围只出现在显示文本里。**禁止 `#L606-L635`**：区间锚点在 Markdown 预览里不会跳行，Cursor 的 Preview 页还会把整个 `路径#锚点` 当成文件名而报找不到文件。
+- **显示文本带完整路径**：禁止只写文件名（`foo.tsx:136`）、禁止无行号、禁止 `export vs publish service` 这类没有位置的描述、禁止只写 `` `start:end:path` ``。
+- 从 `docs/reviews/*.md` 出发的相对路径前缀：
 
   | 目标 | 前缀 |
   |---|---|
   | `backend/` `frontend/` `packages/` `desktop/` | `../../` |
   | `docs/prd/` `docs/design/` `docs/testing/` 等同级文档 | `../` |
 
-- 每条 finding 1–3 个主位点；Decision Board「主位置」、React Doctor 表「位置」同样用链接
-- 禁止无链接的纯反引号路径作为唯一位置
+  同级文档示例：`[docs/prd/x.md:126](../prd/x.md#L126)`。
 
-subagent 若只给了 `` `606:635:path` ``，父 agent **落盘时必须改成上述链接**，不得原样写入报告。
+- 每条 finding 1–3 个主位点；Decision Board「主位置」、React Doctor 表「位置」同样用链接。
+- 禁止无链接的纯反引号路径作为唯一位置。
+
+### 链接之外再贴真实代码
+
+Finding 的位置除链接外，再补一个**围栏引用**，让读者不点开也能看到那几行：
+
+````markdown
+- **位置**: [backend/foo.ts:53-79](../../backend/foo.ts#L53)
+
+```53:79:backend/foo.ts
+function example() {
+  // 文件里的真实行，不要编
+}
+```
+````
+
+- 围栏信息串 = `起始行:结束行:仓库根相对路径`（不要 `./`、不要绝对路径、不要包反引号）。
+- 围栏内必须是 `Read` 到的真实行。超过约 12 行则首尾各留几行，中间 `// ...`。
+- 分工：**跳转靠 `#L` 链接**；围栏负责把代码摆在读者眼前，在**聊天回复**里会渲染成可点击、带行号的代码引用。所以两者都要写。
+- 行内反引号 `` `53:79:path` `` 只是等宽文字，不能点也没有行号；`起始行:结束行:路径` 只有写在围栏信息串上才有效。
+- 对照位点再写第二组「链接 + 围栏」，最多 3 个。
+- Decision Board 表格里放不了围栏，只写链接。
+- 聊天回复贴片段时用同一套围栏。
+
+subagent 若只给了 `` `606:635:path` ``，父 agent **落盘时必须改成上述链接 + 围栏**，不得原样写入报告。禁止无行号、禁止空围栏。
 
 ## Finding 卡片（每条必用）
 
@@ -133,7 +159,7 @@ subagent 若只给了 `` `606:635:path` ``，父 agent **落盘时必须改成�
 <a id="d-01"></a>
 ### D-01 [P0|P1|P2|P3] 短标题
 - **轴**: Design | Clean | Conventions | Testing | Stack | Spec
-- **位置**: [file.ts:12-40](../../path/to/file.ts#L12-L40)（多处列 1–3 个主位点，均为可点击链接）
+- **位置**: [backend/path/to/file.ts:12-40](../../backend/path/to/file.ts#L12)（多处列 1–3 个主位点，均为可点击链接）
 - **现象**: 见下方「说明必须可读」。写清场景、调用顺序、问题出在哪一步；不要 2–4 句压缩结论
 - **为何是问题**: 对应标准（AGENTS 轴名 / practice 名 / test.md）；用本义解释该标准在此处如何被违反
 - **影响**: 正确性 / 架构复利 / 可维护 / 产品偏差 / 性能（择要）；写具体后果，不写空泛词
@@ -162,48 +188,11 @@ Finding **现象** 至少包含：
 2. **调用顺序**：谁调用谁、传入什么、返回什么、下一层拿去干什么。一步只推进一个环节。
 3. **名字**：组件 / 函数 / 类型 / API 第一次出现时，先一句话说明职责再写标识符。
 4. **对照**（若有两处相似逻辑）：相同的是哪几步，不同的是哪一步。
-5. **问题落在哪一步**：不要先丢结论再补背景。
-
-禁止：「表不发网，只把 path 交给页面」「两边都是当前查询 + groupPath → findGroupNodeByPath」「unwrap / 契约适配层 / 一刀 / 落点」。这些句子只有已经读过代码的人才能解码。
+5. **问题落在哪一步**：不要先丢结论再补背景。这一条只约束 finding「现象」正文；向用户的对话回复仍按 [llm-output.md](llm-output.md) 结论先行。
 
 合格的现象：先写表格组件用在详情页和下钻页；点开组头时表格只调用 props 上的回调，自己不请求 HTTP；两个页面各自实现该回调并请求不同 API；接口仍返回整页数据，所以还要从 `groups` 里取出一个组节点交给表格合并。然后再写「因此这段取出组节点的逻辑在两个页面各写了一遍」。
 
-Architecture Brief 同样按调用顺序写职责链；第一次出现的模块先解释。不要用「最值得动的一刀」这类比喻，写「最值得先改的一项」。
-
----
-
-## 代码位置（必须可点击、必须有行号）
-
-Cursor 只把**围栏信息串** `startLine:endLine:path` 渲染成可点击、带行号的代码引用。行内反引号 `` `53:79:path` `` 只是等宽文字：**不能点、没有行号**。这是 `startLine:endLine:path` 的唯一合法写法。
-
-Finding 的「位置」必须两件都写：
-
-1. **Markdown `#L` 链接**（编辑器 Cmd/Ctrl+点击打开文件对应行）
-2. **围栏引用**（信息串 `start:end:仓库根相对路径`，内贴该范围真实代码，才会出现行号）
-
-报告在 `docs/reviews/` 时：
-
-````markdown
-- **位置**: [`backend/foo.ts:L53–L79`](../../backend/foo.ts#L53-L79)
-
-```53:79:backend/foo.ts
-function example() {
-  // 文件里的真实行，不要编
-}
-```
-````
-
-`docs/` 下的文件 href 少一层：[`docs/prd/x.md:L126`](../prd/x.md#L126)。单行用 `#L126`，区间用 `#L53-L79`。
-
-规则：
-
-- 围栏信息串 = `startLine:endLine:仓库根相对路径`（不要 `./`、不要绝对路径、不要包反引号）。
-- 围栏内必须是 `Read` 到的真实行。超过约 12 行则首尾各留几行，中间 `// ...`。
-- 对照位点再写第二个「链接 + 围栏」，最多 3 个。
-- Decision Board 表格里放不了围栏，只写 `#L` 链接，显示文本必须带完整路径和 `L` 行号。禁止 `foo.tsx:136`、禁止 `export vs publish service`。
-- 聊天回复贴片段时用同一套围栏。
-
-禁止：只写 `` `53:79:path` ``；禁止无行号；禁止空围栏。
+Architecture Brief 的写法见「Architecture Brief 读者模型」，那里同样要求按调用顺序写职责链、第一次出现的模块先解释。
 
 ---
 
@@ -252,7 +241,7 @@ docs/reviews/<YYYY-MM-DD>-<slug>.md
 
 | 优先 | ID | Finding | 建议动作 | 成本 | 不做的后果 | 主位置 |
 |------|----|---------|----------|------|------------|--------|
-| 1 | D-01 | … | 立刻改 / 记债 / 先设计 | S/M/L | … | [file.ts:12-40](../../path#L12-L40) |
+| 1 | D-01 | … | 立刻改 / 记债 / 先设计 | S/M/L | … | [backend/path/to/file.ts:12-40](../../backend/path/to/file.ts#L12) |
 
 ## Open questions
 （0–3 个需用户拍板的问题）
@@ -260,7 +249,7 @@ docs/reviews/<YYYY-MM-DD>-<slug>.md
 
 Decision Board 排序 pragmatic：**成熟库/已有能力替换（Design）→ P0 正确性 → 阻塞合入的 Spec → 其余架构复利 → 其它**；每行 **ID 列必须是轴前缀编号**（`D-01`、`T-01`、`S-01`、`K-01`、`N-01`…），主位置必须是可点击链接。成熟库项即使严重度标 P1/P2，只要能显著删代码，仍可排在 Board 最前并注明「优先建议：先换库再细改」。
 
-父 agent 向用户回复时：报告路径 + Board 摘要（含轴前缀 ID）。未进 Board 的 finding 仍须有轴 ID（Findings index 收全）。已有报告追加图或改编号时，**保留全部原卡片正文**。
+未进 Board 的 finding 仍须有轴 ID（Findings index 收全）。已有报告追加图或改编号时，**保留全部原卡片正文**。向用户回复的要求见「总流程 → 4. 聚合并落盘」第 5 步。
 
 ---
 
@@ -268,22 +257,26 @@ Decision Board 排序 pragmatic：**成熟库/已有能力替换（Design）→ 
 
 默认读者是 **刚看到这批 diff、还没建立心智模型的人**（人审 AI 代码是常态）。Brief 不是给已经熟悉调用链的人写的结论备忘。
 
-按这个顺序写，缺一段就重写 Brief，不要用「依赖与职责链」四个字糊过去：
+前四段直接复用 [understand.md](understand.md)「产出结构」的第 1–4 段，顺序和写法都照那边：
 
-1. **用户侧在干什么**（5–8 句，不提文件名、不提 AC 编号）。
-2. **本报告会用到的词**（每个一词一句。入站/出站、绑定、管道、本仓库黑话，第一次出现必须解释。禁止把领域隐喻当已知）。
-3. **代码怎么走**（一张 mermaid 或编号步骤：谁调用谁；每个框一行职责 + 文件名。对照「这条边界为什么存在」用白话说，再括 AC/Design 编号）。
-4. **成熟库 / 已有能力**（读者已经知道哪一层该干什么之后再写「该复用却没复用」）。
-5. **边界变清晰还是变糊 / 最值得动的一刀 / 明确不要动的**。
+1. **一句话**：用户侧加了/改了什么（5–8 句，不提文件名、不提 AC 编号）。
+2. **词表**：本报告会用到的词，一词一句，第一次出现必须解释。
+3. **代码怎么走**：一张 mermaid 或编号步骤，谁调用谁，每个框一行职责 + 文件名。说边界时先用白话讲它为什么存在，再括 AC / Design 编号。
+4. **分层：谁认识谁**。
 
-禁止：第一句就是模块名并列 +「边界成立」；禁止 Brief 里出现未解释的 SPI、inbound/outbound、jobType、fire-and-forget。Finding 卡片可以密，Brief 必须疏。
+review 特有的两段接在后面：
 
-**第一次点名必须先说它干什么**，禁止把文档编号、函数名当读者已知：
+5. **成熟库 / 已有能力**（读者已经知道哪一层该干什么之后，再写「该复用却没复用」）。
+6. **边界变清晰还是变糊 / 最值得先改的一项 / 明确不要动的**。
+
+缺段就重写 Brief，不要用「依赖与职责链」四个字糊过去。Finding 卡片可以密，Brief 必须疏。禁止第一句就是模块名并列 +「边界成立」；用语按 [llm-output.md](llm-output.md)，内部缩写第一次出现先给本义。
+
+报告特有的一条：**文档编号和函数名都不能当读者已知**。
 
 - 错：「ADR-002 欠债，继续走 `feishuFetchJson`。」
 - 对：「ADR-002 规定业务路径禁止自拼 `open.feishu.cn/open-apis/...`，应调官方 `lark.Client`。现状是用户 OAuth 仍 `sdk: null`，`feishuFetchJson` 只是拿 token 再 `fetch(域名+路径)` 的薄封装。」
 
-ADR、helper、管道、队列策略，都按「它实际做了哪一步」写，不要用「欠债 / 收口 / 接不上 Client」代替机制。
+ADR、helper、管道、队列策略，都按「它实际做了哪一步」写。
 
 ---
 

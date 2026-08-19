@@ -26,11 +26,9 @@ Lucas 的产品与研发工具箱。一个 skill，六条子命令。
 
 每条子命令都适用：
 
-- **LLM 输出**：遵守 [reference/llm-output.md](reference/llm-output.md)（用语；说明设计与实现）。适用于对话与所有子命令产出，**不是** review Conventions 轴。
-- 信息不够先引导提问，禁止空泛输出。
+- **LLM 输出**：遵守 [reference/llm-output.md](reference/llm-output.md)（用语与内容风格，含中文正文、信息不够先问）。适用于对话与所有子命令产出，**不是** review Conventions 轴。
 - 上游变更必须向下游传导（战略 → 画像/旅程 → Stories → PRD → 架构 → 测设 → 测试/代码）。
 - 本 skill 写出的 Markdown（战略、画像/旅程、Backlog、PRD、架构、ADR、测设、Walkthrough）顶部 YAML 含 `last_updated`、`status`；有关联 Story 时再加 `related_stories`。Review 报告用自己的报告头，不用这套字段。`understand` 默认只写对话，用户要求落盘时才写 Walkthrough。
-- 中文正文；文件名、ID、代码标识保留英文。
 - 严格区分 In-Scope / Out-of-Scope。
 - 栈规范按需读 `practice/`，不要在写 PRD 时加载 Electron 实践。
 
@@ -59,7 +57,7 @@ Lucas 的产品与研发工具箱。一个 skill，六条子命令。
 | `arch` | Design | 架构 或 部署/环境 | [reference/arch.md](reference/arch.md) |
 | `test` | Verify | 测设文档 或 写测试 | [reference/test.md](reference/test.md) |
 | `understand` | Orient | 对着已有代码写阅读导览（路径 / 时序 / 分层） | [reference/understand.md](reference/understand.md) |
-| `review` | Evaluate | 六轴并行 review，落盘报告（finding 前缀 `D`/`C`/`N`/`T`/`K`/`S`，代码位置为可点击 `#L` 链接） | [reference/review.md](reference/review.md) |
+| `review` | Evaluate | 六轴并行 review，落盘报告 | [reference/review.md](reference/review.md) |
 
 链路：`strategy` → `prd` → `arch` → `test` → 写代码 → `understand`（读懂）→ `review`。`understand` 与 `review` 都吃现成 diff；前者讲解，后者评判。
 
