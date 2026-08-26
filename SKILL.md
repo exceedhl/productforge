@@ -19,7 +19,7 @@ Lucas 的产品与研发工具箱。一个 skill，六条子命令。
 
 点名 `/lh` 或意图落到本 skill 时，先做这些（每个会话做一次）：
 
-1. 若用户点了子命令（`strategy`、`prd`、`arch`、`test`、`review`、`understand`），**必须**接着读对应 `reference/<command>.md`。不要只凭本文件开写。写作前读 [reference/llm-output.md](reference/llm-output.md)。
+1. 若用户点了子命令（`strategy`、`prd`、`arch`、`test`、`review`、`understand`），**必须**接着读对应 `reference/<command>.md`。不要只凭本文件开写。写作前读 [reference/llm-output.md](reference/llm-output.md)。仓库 `AGENTS.md` 若已常驻注入该文件全文，仍以 `reference/llm-output.md` 为维护入口；改完后同步 `AGENTS.md`。
 2. 文档落在本文件默认路径。已有同路径文件则接着改，不要另开一套目录。若仓库有 `AGENTS.md`，其中的项目约定优先于本 skill 默认。
 
 ## 共享不变量
