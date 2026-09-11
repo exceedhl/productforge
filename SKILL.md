@@ -1,36 +1,51 @@
 ---
 name: lh
 description: >-
-  LH product & software kit (lhkit). Strategy (competitors, SWOT, lean canvas),
-  PRD / persona / backlog / metrics, architecture and deploy design, test design
-  and implementation, 6-axis code review, and reading walkthroughs of existing
-  code. Use when the user invokes /lh, or asks for product-strategy,
-  product-requirements, PRD, user stories, persona, journey, tech-design, ADR,
-  testing, test design, full-review, multi-axis review, review since a git
-  baseline, or to understand / walk through / explain a branch or feature's
-  design so they can read the code.
+  Product and software workflow for strategy, requirements, architecture,
+  testing, code walkthroughs, and six-axis review. Use when the user invokes
+  /lh or asks for one of those workflows.
 ---
 
 # lhkit
 
-Lucas 的产品与研发工具箱。一个 skill，六条子命令。
+一个入口，六条产品与研发工作流。
 
-## Setup
+## 每次调用
 
-点名 `/lh` 或意图落到本 skill 时，先做这些（每个会话做一次）：
+1. 读取 [llm-output.md](reference/llm-output.md)；本会话已经读取时不重复加载。
+2. 读取仓库 `AGENTS.md` 或等价规则。项目约定优先于本 skill 默认。
+3. 根据用户意图选择一条命令，先读取该命令的主参考文档，再按其中指引加载必要资料。
+4. 修改已有文档，不另建平行目录或重复产物。
 
-1. 若用户点了子命令（`strategy`、`prd`、`arch`、`test`、`review`、`understand`），**必须**接着读对应 `reference/<command>.md`。不要只凭本文件开写。写作前读 [reference/llm-output.md](reference/llm-output.md)。仓库 `AGENTS.md` 若已常驻注入该文件全文，仍以 `reference/llm-output.md` 为维护入口；改完后同步 `AGENTS.md`。
-2. 文档落在本文件默认路径。已有同路径文件则接着改，不要另开一套目录。若仓库有 `AGENTS.md`，其中的项目约定优先于本 skill 默认。
+## 命令
 
-## 共享不变量
+| 命令 | 目标 | 参考文档 |
+|---|---|---|
+| `strategy` | 为产品定位、竞争和商业模式提供决策依据 | [strategy.md](reference/strategy.md) |
+| `prd` | 让画像、旅程、Story、PRD 和指标可追溯 | [prd.md](reference/prd.md) |
+| `arch` | 记录技术取舍、架构与部署方案 | [arch.md](reference/arch.md) |
+| `test` | 按风险设计测试或补写测试代码 | [test.md](reference/test.md) |
+| `understand` | 帮助未读过代码的人理解入口、调用顺序和数据变化 | [understand.md](reference/understand.md) |
+| `review` | 基于证据执行六轴评审并写入报告文件 | [review.md](reference/review.md) |
 
-每条子命令都适用：
+调用形式：`/lh <command> <自然语言描述或对象>`。不增加第三级子命令。
 
-- **LLM 输出**：遵守 [reference/llm-output.md](reference/llm-output.md)（用语与内容风格，含中文正文、信息不够先问）。适用于对话与所有子命令产出，**不是** review Conventions 轴。
-- 上游变更必须向下游传导（战略 → 画像/旅程 → Stories → PRD → 架构 → 测设 → 测试/代码）。
-- 本 skill 写出的 Markdown（战略、画像/旅程、Backlog、PRD、架构、ADR、测设、Walkthrough）顶部 YAML 含 `last_updated`、`status`；有关联 Story 时再加 `related_stories`。Review 报告用自己的报告头，不用这套字段。`understand` 默认只写对话，用户要求落盘时才写 Walkthrough。
-- 严格区分 In-Scope / Out-of-Scope。
-- 栈规范按需读 `practice/`，不要在写 PRD 时加载 Electron 实践。
+## 路由
+
+1. 用户点名命令时，直接进入对应参考文档。
+2. 用户未点名但意图明确时，选择最匹配的一条：定位与竞品走 `strategy`；需求与指标走 `prd`；技术方案与部署走 `arch`；测试走 `test`；讲解已有代码走 `understand`；判断改动是否需要修改时走 `review`。
+3. 两条命令都合理且会产生不同结果时，只问一个能决定路线的问题。
+4. 只输入 `/lh` 时，根据仓库现状推荐 2–3 个下一步并说明理由，不自动执行。
+
+`understand` 讲解现有实现；`review` 评判是否应修改。不要混用。
+
+## 共享完成条件
+
+- 产出回答了用户当前要做的决策，并明确 In-Scope / Out-of-Scope。
+- 上游内容变化后，检查受影响的下游内容：战略、画像/旅程、Story、PRD、架构、测试设计、测试与代码。
+- 战略、需求、架构、ADR、测试设计和 Walkthrough 文档包含 `last_updated`、`status`；有关联 Story 时包含 `related_stories`。
+- 评审报告使用专用报告头；`understand` 默认只在对话中输出，用户要求时才写入文件。
+- 只加载当前任务需要的 `practice/` 实践文档，不把无关技术栈加入上下文。
 
 ## 默认路径
 
@@ -42,55 +57,17 @@ Lucas 的产品与研发工具箱。一个 skill，六条子命令。
 | PRD | `docs/prd/[ID]_[Brief].md` |
 | 架构 | `docs/technical_architecture.md` |
 | ADR | `docs/adr/`（项目可改写） |
-| 测设 | `docs/testing/` |
-| Review 报告 | `docs/reviews/` |
-| 阅读导览 | `docs/design/[ID]_Walkthrough.md`（仅 `understand` 且用户要求落盘） |
+| 测试设计 | `docs/testing/` |
+| 评审报告 | `docs/reviews/` |
+| 阅读导览 | `docs/design/[ID]_Walkthrough.md`（仅 `understand` 且用户要求写入文件） |
 
-## Commands
-
-调用形态：`/lh <command>`，后面跟自然语言和对象（Story ID、git 基线、文件路径）。**不要**再拆第三级子命令。
-
-| Command | Category | Description | Reference |
-|---|---|---|---|
-| `strategy` | Discover | 竞品 / SWOT / 精益画布 | [reference/strategy.md](reference/strategy.md) |
-| `prd` | Specify | 画像旅程 / Stories / PRD / 度量 | [reference/prd.md](reference/prd.md) |
-| `arch` | Design | 架构 或 部署/环境 | [reference/arch.md](reference/arch.md) |
-| `test` | Verify | 测设文档 或 写测试 | [reference/test.md](reference/test.md) |
-| `understand` | Orient | 对着已有代码写阅读导览（路径 / 时序 / 分层） | [reference/understand.md](reference/understand.md) |
-| `review` | Evaluate | 六轴并行 review，落盘报告 | [reference/review.md](reference/review.md) |
-
-链路：`strategy` → `prd` → `arch` → `test` → 写代码 → `understand`（读懂）→ `review`。`understand` 与 `review` 都吃现成 diff；前者讲解，后者评判。
-
-命令内部的阶段（画像 vs PRD、测设 vs 写测试、架构 vs 部署）从**用户原话**和仓库现状判断，不做成 `measure`、`deploy` 这类参数。
-
-### Routing rules
-
-1. **无参数**：根据 Setup 里看到的仓库信号，推荐 **2–3 个下一步**（各一行理由），再列出上表。**不要自动执行。**
-   - 有代码、有脏 diff 或相对 `origin/main` 的改动 → 可推荐 `understand`（先读懂）或 `review`（要评判）
-   - 有旅程/Stories、缺 PRD → `prd`
-   - 有 PRD、缺测设 → `test`
-   - 有战略空缺、产品还在定位 → `strategy`
-   - 有 PRD、缺架构文档 → `arch`
-2. **首词是命令**：读其 reference。其余文字是意图和对象，用来选该命令内部做哪一段。
-3. **首词不是命令，但意图明确**：按表路由。两可则问一次。
-   - 竞品 / SWOT / 画布 / 定价 → `strategy`
-   - 写 PRD / 补 Story / 画像 / 旅程 / 成功指标 → `prd`
-   - 技术方案 / ADR / 部署 / setup guide → `arch`
-   - 补测试 / 测设 / Golden Dataset → `test`
-   - 读懂 / 讲解改动 / 用户路径与时序 / 分层关系 / 帮我尽快了解这块代码 → `understand`
-   - full review / 多轴 review / review 相对某基线 → `review`
-4. **对不上**：只做 Setup，问一次要走哪条命令。
-
-只点了命令、没说做哪一段时，按仓库现状推断（有旅程没 stories → 写 Backlog；有 story 没 PRD → 写 PRD；有测设或用户说「补测试」→ 写测试）。不确定则问一次。
-
-子命令不要再重新走一遍 `/lh` 路由。
-
-## 标准文档（非命令）
+## 按需参考
 
 | 文件 | 何时读 |
 |---|---|
-| [reference/llm-output.md](reference/llm-output.md) | 始终：对话与任意子命令写作 |
-| [reference/conventions.md](reference/conventions.md) | review Conventions 轴默认清单（薄；项目细则在仓库 `AGENTS.md`） |
+| [reference/conventions.md](reference/conventions.md) | review Conventions 轴的精简默认清单；项目细则在仓库 `AGENTS.md` |
+| [practice/design.md](practice/design.md) | Design 轴；模块职责、依赖方向与技术选择 |
+| [practice/clean.md](practice/clean.md) | Clean 轴；局部代码质量与坏味道 |
 | [practice/yagni.md](practice/yagni.md) | Design 轴；任何实现/评审 |
 | [practice/deep-module.md](practice/deep-module.md) | Design 轴；出现新模块边界时 |
 | [practice/typescript.md](practice/typescript.md) | 改了 TS |
@@ -100,4 +77,8 @@ Lucas 的产品与研发工具箱。一个 skill，六条子命令。
 | [practice/logging.md](practice/logging.md) | 改了日志 |
 | [practice/database.md](practice/database.md) | 改了 DB / 迁移 |
 
-`practice/` 是通用栈规范，**不是**子命令。仅在 `review` 的 Stack / Design 轴，或当前改动就是那一栈时读取。
+`practice/` 是参考资料，不是命令。
+
+## 维护约定
+
+除平台要求的 `SKILL.md` 外，本 skill 内的 Markdown 文件名一律使用小写 kebab-case；重命名文件时同步更新所有引用。
