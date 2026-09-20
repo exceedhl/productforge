@@ -2,8 +2,9 @@
 name: lh
 description: >-
   Product and software workflow for strategy, requirements, architecture,
-  testing, code walkthroughs, and six-axis review. Use when the user invokes
-  /lh or asks for one of those workflows.
+  testing, structured code walkthroughs, and six-axis review. Use when the
+  user invokes /lh or clearly requests one of those structured workflows;
+  do not use for routine targeted code questions.
 ---
 
 # lhkit
@@ -25,19 +26,21 @@ description: >-
 | `prd` | 让画像、旅程、Story、PRD 和指标可追溯 | [prd.md](reference/prd.md) |
 | `arch` | 记录技术取舍、架构与部署方案 | [arch.md](reference/arch.md) |
 | `test` | 按风险设计测试或补写测试代码 | [test.md](reference/test.md) |
-| `understand` | 帮助未读过代码的人理解入口、调用顺序和数据变化 | [understand.md](reference/understand.md) |
-| `review` | 按深度评审改动并写入报告；默认 WIP 跑 Design / Clean / Stack，点名全量才六轴 | [review.md](reference/review.md) |
+| `understand` | 按范围与视图生成整体架构、调用顺序、改动或测试结构导览 | [understand.md](reference/understand.md) |
+| `review` | 按深度评审改动并写入报告；默认 WIP 跑 Design / Clean / Stack，测试变化时追加 Testing | [review.md](reference/review.md) |
 
 调用形式：`/lh <command> <自然语言描述或对象>`。不增加第三级子命令。
 
 ## 路由
 
 1. 用户点名命令时，直接进入对应参考文档。
-2. 用户未点名但意图明确时，选择最匹配的一条：定位与竞品走 `strategy`；需求与指标走 `prd`；技术方案与部署走 `arch`；测试走 `test`；讲解已有代码走 `understand`；判断改动是否需要修改时走 `review`。
+2. 用户未点名但意图明确时，选择最匹配的一条：定位与竞品走 `strategy`；需求与指标走 `prd`；技术方案与部署走 `arch`；测试走 `test`；明确要求结构化代码导览、整体架构 / 时序可视化或改动讲解时走 `understand`；判断改动是否需要修改时走 `review`。
 3. 两条命令都合理且会产生不同结果时，只问一个能决定路线的问题。
 4. 只输入 `/lh` 时，根据仓库现状推荐 2–3 个下一步并说明理由，不自动执行。
 
 `understand` 讲解现有实现；`review` 评判是否应修改。不要混用。
+
+单个函数、类、文件或短代码片段的直接问题不自动进入 `understand`；直接读取必要代码后回答。故障诊断、实现请求、未来架构设计和代码评审也不因涉及代码解释而触发 `understand`。用户只说「解释一下」「看一下」且没有明确范围时，只有在其意图确实是结构化导览时才进入，并按 `understand.md` 询问范围。
 
 ## 共享完成条件
 

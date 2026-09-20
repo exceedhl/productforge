@@ -83,13 +83,14 @@ function example() {
 - **Date**: …
 - **Depth**: WIP
 - **Commits**: …
-- **Axes run / skipped**: Design, Clean, Stack 已运行；其余跳过（WIP）
+- **Axes run / skipped**: Design, Clean, Stack 已运行；Testing 按测试文件是否变化运行或跳过；其余跳过（WIP）
 - **Models**: …
 
 ## Scope
 ## Findings index
 ## Design
 ## Clean
+## Testing（测试文件有变化时）
 ## Stack
 ## Decision Board
 ## Open questions
