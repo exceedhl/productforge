@@ -6,6 +6,8 @@
 
 **项目细则优先**：若仓库有 `AGENTS.md`（或等价）的命名 / 目录 / 日志 / 迁移节，**以仓库为准**；本文件只提供无项目文件时的通用检查项。日志与迁移细节另见 [practice/logging.md](../practice/logging.md)、[practice/database.md](../practice/database.md)。
 
+本节文字是要求，不因为部分条款已由 lint 实现就删除。形状类条款（文件名、跨层 import、`console`、logger 工厂、迁移编号）优先进入各包 lint；名实、动词对齐、目录语义仍按条款判断。机器命令和产出路径见项目 `AGENTS.md` 的机器检查落点，不在本文件写死某一种扫描器。
+
 ---
 
 ## 检查什么

@@ -26,7 +26,7 @@ description: >-
 | `arch` | 记录技术取舍、架构与部署方案 | [arch.md](reference/arch.md) |
 | `test` | 按风险设计测试或补写测试代码 | [test.md](reference/test.md) |
 | `understand` | 帮助未读过代码的人理解入口、调用顺序和数据变化 | [understand.md](reference/understand.md) |
-| `review` | 基于证据执行六轴评审并写入报告文件 | [review.md](reference/review.md) |
+| `review` | 按深度评审改动并写入报告；默认 WIP 跑 Design / Clean / Stack，点名全量才六轴 | [review.md](reference/review.md) |
 
 调用形式：`/lh <command> <自然语言描述或对象>`。不增加第三级子命令。
 
@@ -42,10 +42,11 @@ description: >-
 ## 共享完成条件
 
 - 产出回答了用户当前要做的决策，并明确 In-Scope / Out-of-Scope。
-- 上游内容变化后，检查受影响的下游内容：战略、画像/旅程、Story、PRD、架构、测试设计、测试与代码。
+- 上游内容变化后，只检查确实受影响的下游内容：战略、画像/旅程、Story、PRD、架构、测试设计、测试与代码。
 - 战略、需求、架构、ADR、测试设计和 Walkthrough 文档包含 `last_updated`、`status`；有关联 Story 时包含 `related_stories`。
 - 评审报告使用专用报告头；`understand` 默认只在对话中输出，用户要求时才写入文件。
 - 只加载当前任务需要的 `practice/` 实践文档，不把无关技术栈加入上下文。
+- 规则正文是要求，不因工具能检查而删除。确定性检查优先进入各包 lint；`/lh review` 父会话按项目机器检查落点跑命令并复用产出，子 agent 不自行扫描。
 
 ## 默认路径
 

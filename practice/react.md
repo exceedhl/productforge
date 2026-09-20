@@ -1,5 +1,7 @@
 # React 最佳实践
 
+本节条款是要求，不因为 React Doctor 或 ESLint 已能检查其中一部分就删除。
+
 ## 渲染与状态
 
 - **不再盲目记忆化 (No more blind Memoization)**：除非通过 Profiler 测出性能瓶颈，否则不要盲目使用 `useMemo` 和 `useCallback`。缓存的内存和比较开销往往可能大于重渲染成本。
@@ -18,18 +20,21 @@
 
 ## React Doctor
 
-触及 React UI 的 review / 交付自检时，用 React Doctor 做确定性扫描（安全、性能、正确性、架构）。命令需网络（`npx`）。
+React Doctor 只检查 **React 应用源码**，不是语言通用工具。通用要求仍是上面各节；**本仓库的命令和产出**写在仓库 `AGENTS.md` 的机器检查落点，不在本文件写死路径。
+
+确定性扫描（安全、性能、正确性、架构）优先放进该 React 包的 lint，不要等 `/lh review` 子 agent 再跑。命令通常需要网络（`npx`）。
 
 ### 何时跑
 
-- 变更包含 React 应用源码（含未跟踪文件）→ **必跑**。
+- 变更包含 React 应用源码（含未跟踪文件）→ 走该包 lint 中的 Doctor 脚本，**必跑**。
 - 未触及 React UI → skip，并在产出中写明原因。
+- `/lh review` 父会话：已有本次 lint / Doctor 产出则复用；全量评审需要旁路 JSON 且尚未写入时，父会话按项目落点补跑并写文件。子 agent 不重跑。
 
 扫描根目录是该仓库的 React 应用根（含 `package.json` 与组件源码的目录）。若当前仓库指定了根目录，以项目约定为准。
 
-### 命令
+### 命令形状
 
-`<base>` 与本次 git review 基线一致（如 `origin/main`）；`<app-root>` 为上面的 React 根目录：
+项目落点应等价于：以评审基线为 `--base`，只扫变更（含未跟踪），需要 JSON 时加 `--json --no-score`。
 
 ```bash
 npx -y react-doctor@latest <app-root> \
@@ -43,7 +48,8 @@ npx -y react-doctor@latest <app-root> \
 
 ### 产出约定
 
-- 与 `/lh review` 同时跑时：完整 JSON 写到同次报告旁的 `<report-stem>-react-doctor.json`（默认目录与 review 报告相同，一般为 `docs/reviews/`；项目另有约定则从其约定）。单独跑时自定 stem。
+- 日常自检：看该包 `lint` 的终端输出。
+- 与全量 `/lh review` 同时需要归档时：完整 JSON 写到同次报告旁的 `<report-stem>-react-doctor.json`（默认目录与 review 报告相同，一般为 `docs/reviews/`；项目另有约定则从其约定）。
 - 写入 Markdown 时放在 **`## Stack` → `### React Doctor`**（不要单独开顶层 `## React Doctor`）。
 - 命令失败 → 在 `## Stack` 中记录失败原因并注明「无 Doctor 输入」；不阻断其它自检。
 
