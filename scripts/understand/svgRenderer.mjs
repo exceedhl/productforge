@@ -2,11 +2,11 @@ import {
   BOX,
   TYPE_LABELS,
   boxSlots,
-  estimateTextWidth,
   formatEvidence,
   formatMethodSignature,
   layoutBoxSlots,
   measureBoxHeader,
+  measureEdgeLabel,
 } from "./boxContent.mjs";
 
 const STATUS_LABELS = {
@@ -97,9 +97,13 @@ function renderArchitectureSection(views, guide) {
       </figure>`;
     })
     .join("");
+  const hasLanes = views.some((view) => (view.layout?.lanes ?? []).length > 0);
+  const intro = hasLanes
+    ? "主方向从上到下。整图不分层。放大图只画有名字、且 Unit 能对上的职责层；嵌套底框只表示包含关系，不与分层颜色混用。箭头只表示跨边界耦合。"
+    : "主方向从左到右。没有可对齐的职责层时按参与方关系排列，不画分层色带。嵌套底框表示包含关系。箭头只表示跨边界耦合。";
   return `<section id="architecture">
     <h2>架构结构</h2>
-    <p>主方向从上到下。整图不分层。放大图用通栏横向职责层作坐标系；嵌套底框只表示包含关系，不与分层颜色混用。箭头只表示跨边界耦合。</p>
+    <p>${intro}</p>
     <div class="legend">
       ${layerLegendChips(views)}
       ${Object.entries(TYPE_LABELS)
@@ -250,9 +254,7 @@ function renderArchitectureLanes(architecture) {
   const width = architecture.width;
   return lanes
     .map((lane, index) => {
-      const titleLines = lane.title
-        .split(/\s*\/\s*/u)
-        .flatMap((part) => wrapLaneTitle(part, gutter - 40));
+      const titleLines = wrapLaneTitle(lane.title, gutter - 40);
       const titleTop = lane.y + lane.height / 2 - ((titleLines.length - 1) * 15) / 2 + 4;
       const titleBlock = titleLines
         .map(
@@ -297,9 +299,7 @@ function renderArchitectureEdge(edge) {
   const title = edge.label || RELATION_LABELS[edge.type] || "";
   const protocol = edge.protocol ?? "";
   const labelPoint = edge.labelPoint ?? midpoint(points[0], points[1]);
-  const lines = [title, protocol].filter(Boolean);
-  const pillWidth = Math.max(36, ...lines.map((line) => estimateTextWidth(line, 11))) + 16;
-  const pillHeight = lines.length * 15 + 8;
+  const { width: pillWidth, height: pillHeight } = measureEdgeLabel(edge);
   const labelMarkup = title
     ? `<g class="edge-caption" transform="translate(${labelPoint.x} ${labelPoint.y})">
         <rect class="edge-pill" x="${-pillWidth / 2}" y="${-pillHeight - 2}" width="${pillWidth}" height="${pillHeight}" rx="4" />
@@ -340,10 +340,12 @@ function renderEntityBox(node, roleClass) {
   cursorY += layout.responsibilityLines.length * BOX.line;
   const ports = layout.contractLines
     .map((name) => {
+      const markX = left;
+      const markY = cursorY - 9;
       const markup = `
       <g class="contract-port">
-        <circle cx="${node.x + node.width}" cy="${cursorY - 4}" r="4" />
-        <text x="${right - 8}" y="${cursorY}" text-anchor="end">${escapeHtml(name)}</text>
+        <rect x="${markX}" y="${markY}" width="8" height="8" rx="2" />
+        <text x="${markX + 12}" y="${cursorY}">${escapeHtml(name)}</text>
       </g>`;
       cursorY += BOX.line;
       return markup;
@@ -677,8 +679,8 @@ function pageCss() {
     .chip.arch-layer.layer-domain { background: oklch(92% 0.035 150); }
     .chip.arch-layer.layer-persistence { background: oklch(92% 0.03 300); }
     .chip.arch-layer.layer-store { background: oklch(91% 0.03 240); }
-    .contract-port circle { fill: oklch(50% 0.12 300); stroke: none; }
-    .contract-port text { fill: oklch(42% 0.1 300); }
+    .contract-port rect { fill: oklch(88% 0.05 300); stroke: oklch(58% 0.1 300); stroke-width: 1; }
+    .contract-port text { fill: oklch(38% 0.08 300); }
     .branch rect { fill: none; stroke: oklch(70% 0.02 220); stroke-dasharray: 5 4; }
     .chip.status-added { color: var(--added); }
     .chip.status-removed { color: var(--removed); }

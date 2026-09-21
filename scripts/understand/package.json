@@ -6,6 +6,7 @@
   "description": "Walkthrough IR renderer for /lh understand. ELK.js is vendored; do not npm install from the monorepo root.",
   "scripts": {
     "check": "node cli.mjs validate --input examples/walkthrough.json",
+    "test": "node --test architectureLayout.test.mjs",
     "render:example": "node cli.mjs render --input examples/walkthrough.json --output examples/walkthrough.html"
   }
 }

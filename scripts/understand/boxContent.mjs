@@ -155,6 +155,17 @@ export function formatEvidence(evidence) {
   return `${fileName(first.path)}${line}`;
 }
 
+export function measureEdgeLabel(edge) {
+  const title = edge.label || "";
+  const protocol = edge.protocol ?? "";
+  const lines = [title, protocol].filter(Boolean);
+  if (lines.length === 0) return { width: 0, height: 0 };
+  return {
+    width: Math.max(36, ...lines.map((line) => estimateTextWidth(line, 11))) + 16,
+    height: lines.length * 15 + 8,
+  };
+}
+
 export function estimateTextWidth(text, fontSize) {
   let units = 0;
   for (const character of String(text ?? "")) {

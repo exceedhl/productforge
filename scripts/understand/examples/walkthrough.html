@@ -4,99 +4,154 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Billing 外部集成主路径</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
   <style>
     :root {
-      --bg: #f6f3ee;
-      --panel: #fffdf8;
-      --ink: #1f2430;
-      --muted: #667085;
-      --line: #d7cfc3;
-      --actor: #e8f1ff;
-      --system: #efe7d8;
-      --container: #f3eee4;
-      --component: #e7f0ea;
-      --module: #f7efe3;
-      --unit: #ffffff;
-      --contract: #f3e9ff;
-      --store: #e8eef5;
-      --added: #1f7a4d;
-      --removed: #b42318;
-      --modified: #b54708;
-      --moved: #175cd3;
+      --bg: oklch(100% 0 0);
+      --panel: oklch(100% 0 0);
+      --canvas: oklch(96% 0.005 240);
+      --ink: oklch(22% 0.02 220);
+      --muted: oklch(42% 0.03 220);
+      --line: oklch(88% 0.015 220);
+      --primary: oklch(60% 0.14 210);
+      --actor: oklch(96% 0.02 230);
+      --system: oklch(96% 0.008 240);
+      --container: oklch(97% 0.006 240);
+      --component: oklch(96% 0.018 160);
+      --module: oklch(97% 0.012 80);
+      --unit: oklch(100% 0 0);
+      --contract: oklch(96% 0.03 300);
+      --store: oklch(96% 0.018 230);
+      --added: oklch(45% 0.12 150);
+      --removed: oklch(48% 0.14 25);
+      --modified: oklch(50% 0.12 75);
+      --moved: oklch(45% 0.12 250);
     }
     * { box-sizing: border-box; }
+    html { background: var(--bg); }
     body {
       margin: 0;
-      font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+      font-family: Inter, "PingFang SC", "Noto Sans SC", ui-sans-serif, sans-serif;
       color: var(--ink);
       background: var(--bg);
     }
-    .page-header, .tabs, main { padding: 20px 28px; }
-    .page-header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
-    h1 { margin: 4px 0 0; font-size: 28px; }
-    .kicker, .meta, .type-mark, .layer-mark, .file-badge, .status-badge, .lane-title { color: var(--muted); }
-    .kicker { margin: 0; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; }
-    .meta { margin: 8px 0 0; font-size: 13px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 8px; max-width: 52%; justify-content: flex-end; }
-    .chip, .tab {
+    ::selection { background: oklch(88% 0.06 210); color: var(--ink); }
+    .page-header, .guide { padding: 28px 32px 8px; }
+    .guide { padding-top: 8px; padding-bottom: 64px; }
+    h1 { margin: 0; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.03em; }
+    h2 { margin: 2.5rem 0 0.7rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+    h3 { margin: 1.25rem 0 0.4rem; font-size: 1rem; font-weight: 600; }
+    .guide > section > p, .guide .block p, .guide li { max-width: 70ch; line-height: 1.7; }
+    .meta, .type-mark, .file-badge, .status-badge, .lane-title, .location, .figure figcaption { color: var(--muted); }
+    .meta { margin: 8px 0 0; font-size: 0.8125rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+    .chip {
       border: 1px solid var(--line);
-      background: var(--panel);
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 12px;
+      background: var(--canvas);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--line); }
-    .tab { cursor: pointer; border-radius: 10px 10px 0 0; }
-    .tab.active, .chip.status-context { background: #ece6db; }
-    .panel { display: none; }
-    .panel.active { display: block; }
-    .canvas { overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; }
+    .chip.arch-layer { letter-spacing: 0.04em; text-transform: none; }
+    .figure { margin: 16px 0 32px; }
+    .figure figcaption { margin: 0 0 8px; font-size: 0.8125rem; }
+    .canvas {
+      overflow: auto;
+      padding: 8px;
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .canvas::-webkit-scrollbar { height: 10px; width: 10px; }
+    .canvas::-webkit-scrollbar-thumb { background: oklch(78% 0.02 220); border-radius: 99px; }
+    .pseudocode {
+      overflow: auto;
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: Menlo, Monaco, Consolas, ui-monospace, monospace;
+      font-size: 0.8125rem;
+      line-height: 1.55;
+    }
+    .rules { padding-left: 20px; }
+    .location { margin-top: 4px; font-family: Menlo, Monaco, Consolas, ui-monospace, monospace; font-size: 12px; }
     svg { display: block; }
+    .box text, .participant text, .message text, .edge-caption text, .arch-lane-title, .lane-title {
+      paint-order: stroke;
+      stroke: var(--canvas);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
     .box rect, .participant rect, .note rect {
       fill: var(--unit);
-      stroke: #3f3a33;
-      stroke-width: 1.4;
+      stroke: oklch(32% 0.02 220);
+      stroke-width: 1;
     }
-    .compound rect { fill: rgba(255,255,255,0.46); stroke: #8a8174; }
+    .compound rect { fill: none; stroke: oklch(55% 0.02 220); stroke-dasharray: 3 3; }
     .type-actor rect { fill: var(--actor); }
-    .type-system rect { fill: var(--system); }
-    .type-container rect { fill: var(--container); }
-    .type-component rect { fill: var(--component); }
+    .type-system.leaf rect { fill: var(--system); }
+    .type-container.leaf rect { fill: var(--container); }
+    .type-component.leaf rect { fill: var(--component); }
     .type-module rect { fill: var(--module); }
     .type-contract rect { fill: var(--contract); }
     .type-store rect { fill: var(--store); }
-    .status-added rect, .edge.status-added path { stroke: var(--added); stroke-width: 2.2; }
+    .status-added rect, .edge.status-added path { stroke: var(--added); stroke-width: 1.8; }
     .status-removed rect, .edge.status-removed path, .message.status-removed line { stroke: var(--removed); stroke-dasharray: 6 4; }
-    .status-modified rect, .edge.status-modified path { stroke: var(--modified); stroke-width: 2.2; }
-    .status-moved rect, .edge.status-moved path { stroke: var(--moved); stroke-width: 2.2; }
-    .title { font-size: 14px; font-weight: 650; }
-    .identity, .file-badge, .contract-port text { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; }
+    .status-modified rect, .edge.status-modified path { stroke: var(--modified); stroke-width: 1.8; }
+    .status-moved rect, .edge.status-moved path { stroke: var(--moved); stroke-width: 1.8; }
+    .title { font-size: 13px; font-weight: 600; fill: var(--ink); }
+    .identity, .file-badge, .contract-port text, .message-method { font-family: Menlo, Monaco, Consolas, ui-monospace, monospace; font-size: 11px; }
     .responsibility, .note text { font-size: 12px; fill: var(--muted); }
-    .message-label, .message-method, .message-detail {
-      font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
-      font-size: 12px;
-    }
-    .message-detail { fill: var(--muted); }
-    .type-mark, .layer-mark, .status-badge, .lane-title { font-size: 11px; }
-    .layer-mark { fill: var(--muted); }
+    .message-label { font-size: 12px; font-weight: 600; fill: var(--ink); }
+    .message-method { fill: var(--ink); }
+    .message-detail { font-size: 12px; fill: var(--muted); }
+    .type-mark, .status-badge, .lane-title { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
     .lifeline {
       fill: none;
-      stroke: #b3aa9e;
-      stroke-width: 1.5;
-      stroke-dasharray: 5 6;
+      stroke: oklch(72% 0.02 220);
+      stroke-width: 1.25;
+      stroke-dasharray: 4 6;
       stroke-linecap: round;
     }
-    .edge path, .message line { fill: none; stroke: #6f675c; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+    .edge path, .message line { fill: none; stroke: oklch(45% 0.03 220); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
     .message.kind-return line, .message.kind-async line { stroke-dasharray: 5 4; }
-    .arrow-head, marker path { fill: #6f675c; }
-    .edge-label { font-size: 12px; fill: #3f3a33; }
+    .arrow-head, marker path { fill: oklch(45% 0.03 220); }
+    .edge-pill { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+    .edge-label { font-size: 11px; font-weight: 600; fill: var(--ink); }
     .edge-protocol { font-size: 11px; fill: var(--muted); }
-    .lane { fill: #f6f1e8; stroke: none; }
-    .lane-rail { fill: #efe6d8; stroke: none; }
-    .lane-title { font-size: 12px; font-weight: 650; fill: #6b6256; }
-    .contract-port circle { fill: #6941c6; stroke: none; }
-    .contract-port text { fill: #6941c6; }
-    .branch rect { fill: none; stroke: #98a2b3; stroke-dasharray: 5 4; }
+    .lane { fill: oklch(98% 0.006 240); stroke: none; }
+    .lane-rail { fill: oklch(94% 0.012 240); stroke: none; }
+    .lane-title, .arch-lane-title { font-size: 11px; font-weight: 600; fill: var(--ink); }
+    .arch-lane, .arch-lane-rail { stroke: none; }
+    .arch-lane.layer-actor { fill: oklch(96% 0.02 230); }
+    .arch-lane.layer-presentation { fill: oklch(96% 0.018 80); }
+    .arch-lane.layer-interface { fill: oklch(95% 0.03 210); }
+    .arch-lane.layer-domain { fill: oklch(96% 0.022 150); }
+    .arch-lane.layer-persistence { fill: oklch(96% 0.02 300); }
+    .arch-lane.layer-store { fill: oklch(95% 0.02 240); }
+    .arch-lane.layer-other { fill: oklch(96% 0.008 240); }
+    .arch-lane-rail { fill: color-mix(in oklch, var(--ink) 8%, transparent); }
+    .arch-lane-rail.layer-actor { fill: oklch(90% 0.03 230); }
+    .arch-lane-rail.layer-presentation { fill: oklch(90% 0.03 80); }
+    .arch-lane-rail.layer-interface { fill: oklch(88% 0.045 210); }
+    .arch-lane-rail.layer-domain { fill: oklch(90% 0.035 150); }
+    .arch-lane-rail.layer-persistence { fill: oklch(90% 0.03 300); }
+    .arch-lane-rail.layer-store { fill: oklch(89% 0.03 240); }
+    .arch-lane-divider { stroke: oklch(78% 0.02 220); stroke-width: 1; }
+    .chip.arch-layer.layer-actor { background: oklch(92% 0.03 230); }
+    .chip.arch-layer.layer-presentation { background: oklch(92% 0.03 80); }
+    .chip.arch-layer.layer-interface { background: oklch(90% 0.045 210); }
+    .chip.arch-layer.layer-domain { background: oklch(92% 0.035 150); }
+    .chip.arch-layer.layer-persistence { background: oklch(92% 0.03 300); }
+    .chip.arch-layer.layer-store { background: oklch(91% 0.03 240); }
+    .contract-port rect { fill: oklch(88% 0.05 300); stroke: oklch(58% 0.1 300); stroke-width: 1; }
+    .contract-port text { fill: oklch(38% 0.08 300); }
+    .branch rect { fill: none; stroke: oklch(70% 0.02 220); stroke-dasharray: 5 4; }
     .chip.status-added { color: var(--added); }
     .chip.status-removed { color: var(--removed); }
     .chip.status-modified { color: var(--modified); }
@@ -105,18 +160,26 @@
 </head>
 <body>
   <header class="page-header">
-    <div>
-      <p class="kicker">Walkthrough IR</p>
-      <h1>Billing 外部集成主路径</h1>
-      <p class="meta">examples/walkthrough.json · /example/catalog-app · @demo</p>
-    </div>
-    <div class="legend">
-      <span class="chip type-actor">Actor</span><span class="chip type-system">System</span><span class="chip type-container">Container</span><span class="chip type-component">Component</span><span class="chip type-module">Module</span><span class="chip type-unit">Unit</span><span class="chip type-contract">Contract</span><span class="chip type-store">Store</span>
-      <span class="chip status-context">Context</span><span class="chip status-added">+ Added</span><span class="chip status-removed">− Removed</span><span class="chip status-modified">~ Modified</span><span class="chip status-moved">↔ Moved / Renamed</span>
-    </div>
+    <h1>Billing 外部集成主路径</h1>
+      <p class="meta">当前视图</p>
   </header>
-  <nav class="tabs"><button class="tab active" type="button" data-target="architecture-overview">架构概览</button><button class="tab" type="button" data-target="architecture-detail">架构展开</button><button class="tab" type="button" data-target="sequence-scenario.create-invoice">创建发票主路径</button></nav>
-  <main><section class="panel active" id="architecture-overview"><div class="canvas"><svg viewBox="0 0 1315 516" width="1315" height="516" role="img">
+  <article class="guide">
+    <section id="scope">
+    <h2>范围与视图</h2>
+    <p>范围是指定区域。展示当前视图，只讲当前实现。</p>
+    
+  </section>
+    
+    <section id="architecture">
+    <h2>架构结构</h2>
+    <p>主方向从上到下。没有可归属的职责层时不画分层色带。嵌套底框表示包含关系。箭头只表示跨边界耦合。</p>
+    <div class="legend">
+      
+      <span class="chip type-actor">Actor</span><span class="chip type-system">System</span><span class="chip type-container">Container</span><span class="chip type-component">Component</span><span class="chip type-module">Module</span><span class="chip type-unit">Unit</span><span class="chip type-contract">Contract</span><span class="chip type-store">Store</span>
+    </div>
+    <figure class="figure">
+        <figcaption>整图：同一颗粒度，不分层。</figcaption>
+        <div class="canvas"><svg viewBox="0 0 1215 346" width="1215" height="346" role="img">
     <defs>
       <marker id="arrow-context" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
         <path d="M 1 1 L 11 6 L 1 11 z" />
@@ -135,93 +198,81 @@
       </marker>
     </defs>
     <g transform="translate(24 24)">
-    <g class="box type-system status-context compound">
-      <rect x="308" y="48" width="651" height="372" rx="16" />
-      
-      <text class="type-mark" x="324" y="68" text-anchor="start">System</text>
-      
-      
-      <text class="title" x="324" y="86" text-anchor="start">Catalog App</text>
-      <text class="identity" x="324" y="104" text-anchor="start">catalog-app</text>
-      
-      
-      
-    </g>
     <g class="box type-container status-context compound">
-      <rect x="344" y="146" width="567" height="238" rx="16" />
+      <rect x="244" y="16" width="554" height="233.66666666666669" rx="10" />
       
-      <text class="type-mark" x="360" y="166" text-anchor="start">Container</text>
+      <text class="type-mark" x="260" y="34">Container</text>
       
-      
-      <text class="title" x="360" y="184" text-anchor="start">Backend</text>
-      <text class="identity" x="360" y="202" text-anchor="start">backend</text>
+      <text class="title" x="260" y="52">Backend</text>
+      <text class="identity" x="260" y="70">backend</text>
       
       
       
     </g>
     <g class="box type-component status-context leaf">
-      <rect x="380" y="244" width="239" height="104" rx="12" />
+      <rect x="260" y="115.66666666666667" width="200" height="118" rx="8" />
       
-      <text class="type-mark" x="396" y="264" text-anchor="start">Component</text>
+      <text class="type-mark" x="276" y="133.66666666666669">Component</text>
       
-      
-      <text class="title" x="396" y="282" text-anchor="start">Billing</text>
-      <text class="identity" x="396" y="300" text-anchor="start">billing</text>
-      <text class="responsibility" x="396" y="318" text-anchor="start">暴露计费注册入口并隐藏内部模块</text>
+      <text class="title" x="276" y="151.66666666666669">Billing</text>
+      <text class="identity" x="276" y="169.66666666666669">billing</text>
+      <text class="responsibility" x="276" y="187.66666666666669">暴露计费注册入口并隐藏内部模</text><text class="responsibility" x="276" y="205.66666666666669">块</text>
       
       
     </g>
     <g class="box type-actor status-context leaf">
-      <rect x="48" y="191" width="196" height="86" rx="12" />
+      <rect x="16" y="65" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="64" y="211" text-anchor="start">Actor</text>
+      <text class="type-mark" x="32" y="83">Actor</text>
       
+      <text class="title" x="32" y="101">财务运营</text>
       
-      <text class="title" x="64" y="229" text-anchor="start">财务运营</text>
-      
-      <text class="responsibility" x="64" y="247" text-anchor="start">发起对账并查看发票</text>
+      <text class="responsibility" x="32" y="119">发起对账并查看发票</text>
       
       
     </g>
     <g class="box type-store status-context leaf">
-      <rect x="667" y="253" width="196" height="86" rx="12" />
+      <rect x="582" y="114" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="683" y="273" text-anchor="start">Store</text>
+      <text class="type-mark" x="598" y="132">Store</text>
       
-      
-      <text class="title" x="683" y="291" text-anchor="start">发票表</text>
-      <text class="identity" x="683" y="309" text-anchor="start">invoices</text>
+      <text class="title" x="598" y="150">发票表</text>
+      <text class="identity" x="598" y="168">invoices</text>
       
       
       
     </g>
     <g class="box type-system status-context leaf">
-      <rect x="1023" y="191" width="196" height="86" rx="12" />
+      <rect x="919" y="163" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="1039" y="211" text-anchor="start">System</text>
+      <text class="type-mark" x="935" y="181">System</text>
       
-      
-      <text class="title" x="1039" y="229" text-anchor="start">Payment Provider</text>
-      <text class="identity" x="1039" y="247" text-anchor="start">payment-provider</text>
+      <text class="title" x="935" y="199">Payment Provider</text>
+      <text class="identity" x="935" y="217">payment-provider</text>
       
       
       
     </g>
     <g class="edge status-context kind-writes">
-      <path d="M 619 296 L 657 296" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(643 292)">
-        <text class="edge-label" text-anchor="middle" y="-16">写入发票定义</text>
+      <path d="M 460 155 L 572 155" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(521 155)">
+        <rect class="edge-pill" x="-41" y="-40" width="82" height="38" rx="4" />
+        <text class="edge-label" text-anchor="middle" y="-18">写入发票定义</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">table</text>
       </g>
     </g>
     <g class="edge status-context kind-calls">
-      <path d="M 959 234 L 1013 234" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(991 230)">
-        <text class="edge-label" text-anchor="middle" y="-16">创建收款</text>
+      <path d="M 460 194.33333333333331 L 465.16666666666663 194.33333333333331 Q 470 194.33333333333331 470 199.16666666666666 L 470 199.16666666666666 Q 470 204 474.83333333333337 204 L 909 204" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(694.5 248)">
+        <rect class="edge-pill" x="-30" y="-40" width="60" height="38" rx="4" />
+        <text class="edge-label" text-anchor="middle" y="-18">创建收款</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">HTTPS</text>
       </g>
     </g></g>
-  </svg></div></section><section class="panel" id="architecture-detail"><div class="canvas"><svg viewBox="0 0 1928 818" width="1928" height="818" role="img">
+  </svg></div>
+      </figure><figure class="figure">
+        <figcaption>放大图：展开焦点到 Unit。</figcaption>
+        <div class="canvas"><svg viewBox="0 0 792 1263" width="792" height="1263" role="img">
     <defs>
       <marker id="arrow-context" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
         <path d="M 1 1 L 11 6 L 1 11 z" />
@@ -240,152 +291,143 @@
       </marker>
     </defs>
     <g transform="translate(24 24)">
-    <g class="box type-system status-context compound">
-      <rect x="308" y="48" width="1264" height="674" rx="16" />
-      
-      <text class="type-mark" x="324" y="68" text-anchor="start">System</text>
-      
-      
-      <text class="title" x="324" y="86" text-anchor="start">Catalog App</text>
-      <text class="identity" x="324" y="104" text-anchor="start">catalog-app</text>
-      
-      
-      
-    </g>
     <g class="box type-container status-context compound">
-      <rect x="344" y="146" width="1180" height="540" rx="16" />
+      <rect x="96" y="130" width="600" height="840" rx="10" />
       
-      <text class="type-mark" x="360" y="166" text-anchor="start">Container</text>
-      <text class="layer-mark" x="426" y="166" text-anchor="start">接口 / 编排</text>
+      <text class="type-mark" x="112" y="148">Container</text>
       
-      <text class="title" x="360" y="184" text-anchor="start">Backend</text>
-      <text class="identity" x="360" y="202" text-anchor="start">backend</text>
+      <text class="title" x="112" y="166">Backend</text>
+      <text class="identity" x="112" y="184">backend</text>
       
       
       
     </g>
     <g class="box type-component status-context compound">
-      <rect x="380" y="244" width="852" height="406" rx="16" />
+      <rect x="112" y="220" width="568" height="553" rx="10" />
       
-      <text class="type-mark" x="396" y="264" text-anchor="start">Component</text>
+      <text class="type-mark" x="128" y="238">Component</text>
       
-      
-      <text class="title" x="396" y="282" text-anchor="start">Billing</text>
-      <text class="identity" x="396" y="300" text-anchor="start">billing</text>
-      <text class="responsibility" x="396" y="318" text-anchor="start">暴露计费注册入口并隐藏内部模块</text>
+      <text class="title" x="128" y="256">Billing</text>
+      <text class="identity" x="128" y="274">billing</text>
+      <text class="responsibility" x="128" y="292">暴露计费注册入口并隐藏内部模块</text>
       
       
     </g>
     <g class="box type-module status-context compound">
-      <rect x="904" y="360" width="280" height="254" rx="16" />
+      <rect x="212" y="530" width="232" height="222" rx="10" />
       
-      <text class="type-mark" x="920" y="380" text-anchor="start">Module</text>
-      <text class="layer-mark" x="967" y="380" text-anchor="start">领域 / 应用</text>
+      <text class="type-mark" x="228" y="548">Module</text>
       
-      <text class="title" x="920" y="398" text-anchor="start">写入发票</text>
-      <text class="identity" x="920" y="416" text-anchor="start">invoiceWriter</text>
+      <text class="title" x="228" y="566">写入发票</text>
+      <text class="identity" x="228" y="584">invoiceWriter</text>
       
       
-      <text class="file-badge" x="1172" y="446" text-anchor="end">invoiceWriter.ts</text>
+      <text class="file-badge" x="432" y="612" text-anchor="end">invoiceWriter.ts</text>
     </g>
     <g class="box type-unit status-context leaf">
-      <rect x="940" y="466" width="196" height="112" rx="12" />
+      <rect x="228" y="628" width="200" height="108" rx="8" />
       
-      <text class="type-mark" x="956" y="486" text-anchor="start">Unit</text>
-      <text class="layer-mark" x="990" y="486" text-anchor="start">领域 / 应用</text>
+      <text class="type-mark" x="244" y="646">Unit</text>
       
-      <text class="title" x="956" y="504" text-anchor="start">发票工具</text>
-      <text class="identity" x="956" y="522" text-anchor="start">invoiceTool</text>
+      <text class="title" x="244" y="664">发票工具</text>
+      <text class="identity" x="244" y="682">invoiceTool</text>
       
       
       <g class="contract-port">
-        <circle cx="1136" cy="536" r="4.5" />
-        <text x="1116" y="540" text-anchor="end">InvoiceToolContract</text>
+        <rect x="244" y="691" width="8" height="8" rx="2" />
+        <text x="256" y="700">InvoiceToolContract</text>
       </g>
-      <text class="file-badge" x="1124" y="566" text-anchor="end">invoiceTool.ts</text>
+      <text class="file-badge" x="416" y="726" text-anchor="end">invoiceTool.ts</text>
     </g>
     <g class="box type-module status-context leaf">
-      <rect x="660" y="440" width="196" height="94" rx="12" />
+      <rect x="128" y="346" width="200" height="90" rx="8" />
       
-      <text class="type-mark" x="676" y="460" text-anchor="start">Module</text>
-      <text class="layer-mark" x="723" y="460" text-anchor="start">接口 / 编排</text>
+      <text class="type-mark" x="144" y="364">Module</text>
       
-      <text class="title" x="676" y="478" text-anchor="start">注册计费能力</text>
-      <text class="identity" x="676" y="496" text-anchor="start">registerBilling</text>
+      <text class="title" x="144" y="382">注册计费能力</text>
+      <text class="identity" x="144" y="400">registerBilling</text>
       
       
-      <text class="file-badge" x="844" y="522" text-anchor="end">registerBilling.ts</text>
+      <text class="file-badge" x="316" y="426" text-anchor="end">registerBilling.ts</text>
     </g>
     <g class="box type-module status-context leaf">
-      <rect x="416" y="440" width="196" height="94" rx="12" />
+      <rect x="464" y="662" width="200" height="90" rx="8" />
       
-      <text class="type-mark" x="432" y="460" text-anchor="start">Module</text>
-      <text class="layer-mark" x="479" y="460" text-anchor="start">持久化 / 网关</text>
+      <text class="type-mark" x="480" y="680">Module</text>
       
-      <text class="title" x="432" y="478" text-anchor="start">支付提供方适配</text>
-      <text class="identity" x="432" y="496" text-anchor="start">providerApi</text>
+      <text class="title" x="480" y="698">支付提供方适配</text>
+      <text class="identity" x="480" y="716">providerApi</text>
       
       
-      <text class="file-badge" x="600" y="522" text-anchor="end">providerApi.ts</text>
+      <text class="file-badge" x="652" y="742" text-anchor="end">providerApi.ts</text>
     </g>
     <g class="box type-actor status-context leaf">
-      <rect x="48" y="342" width="196" height="86" rx="12" />
+      <rect x="12" y="12" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="64" y="362" text-anchor="start">Actor</text>
+      <text class="type-mark" x="28" y="30">Actor</text>
       
+      <text class="title" x="28" y="48">财务运营</text>
       
-      <text class="title" x="64" y="380" text-anchor="start">财务运营</text>
-      
-      <text class="responsibility" x="64" y="398" text-anchor="start">发起对账并查看发票</text>
+      <text class="responsibility" x="28" y="66">发起对账并查看发票</text>
       
       
     </g>
     <g class="box type-store status-context leaf">
-      <rect x="1280" y="404" width="196" height="86" rx="12" />
+      <rect x="228" y="872" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="1296" y="424" text-anchor="start">Store</text>
+      <text class="type-mark" x="244" y="890">Store</text>
       
-      
-      <text class="title" x="1296" y="442" text-anchor="start">发票表</text>
-      <text class="identity" x="1296" y="460" text-anchor="start">invoices</text>
+      <text class="title" x="244" y="908">发票表</text>
+      <text class="identity" x="244" y="926">invoices</text>
       
       
       
     </g>
     <g class="box type-system status-context leaf">
-      <rect x="1636" y="342" width="196" height="86" rx="12" />
+      <rect x="464" y="1085" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="1652" y="362" text-anchor="start">System</text>
+      <text class="type-mark" x="480" y="1103">System</text>
       
-      
-      <text class="title" x="1652" y="380" text-anchor="start">Payment Provider</text>
-      <text class="identity" x="1652" y="398" text-anchor="start">payment-provider</text>
+      <text class="title" x="480" y="1121">Payment Provider</text>
+      <text class="identity" x="480" y="1139">payment-provider</text>
       
       
       
     </g>
     <g class="edge status-context kind-dependsOn">
-      <path d="M 856 487 L 894 487" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(880 483)">
-        <text class="edge-label" text-anchor="middle" y="-16">注册写入入口</text>
+      <path d="M 228 436 L 228 520" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(228 483)">
+        <rect class="edge-pill" x="-41" y="-40" width="82" height="38" rx="4" />
+        <text class="edge-label" text-anchor="middle" y="-18">注册写入入口</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">in-process</text>
       </g>
     </g>
     <g class="edge status-context kind-writes">
-      <path d="M 1232 447 L 1270 447" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(1256 443)">
-        <text class="edge-label" text-anchor="middle" y="-16">写入发票定义</text>
+      <path d="M 328 736 L 328 862" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(328 804)">
+        <rect class="edge-pill" x="-41" y="-40" width="82" height="38" rx="4" />
+        <text class="edge-label" text-anchor="middle" y="-18">写入发票定义</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">table</text>
       </g>
     </g>
     <g class="edge status-context kind-calls">
-      <path d="M 1572 385 L 1626 385" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(1604 381)">
-        <text class="edge-label" text-anchor="middle" y="-16">创建收款</text>
+      <path d="M 564 752 L 564 1075" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(564 918.5)">
+        <rect class="edge-pill" x="-30" y="-40" width="60" height="38" rx="4" />
+        <text class="edge-label" text-anchor="middle" y="-18">创建收款</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">HTTPS</text>
       </g>
     </g></g>
-  </svg></div></section><section class="panel" id="sequence-scenario.create-invoice"><div class="canvas"><svg viewBox="0 0 1628 964" width="1628" height="964" role="img">
+  </svg></div>
+      </figure>
+  </section>
+    
+    <section id="sequence">
+    <h2>运行顺序</h2>
+    <p>时序图只讲这一条路径上谁在何时调用谁。判定和变换见下面的伪代码。</p>
+    <figure class="figure">
+        <figcaption>创建发票主路径</figcaption>
+        <div class="canvas"><svg viewBox="0 0 1311 948" width="1311" height="948" role="img">
     <defs>
       <marker id="arrow-context" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
         <path d="M 1 1 L 11 6 L 1 11 z" />
@@ -404,160 +446,145 @@
       </marker>
     </defs>
     <g transform="translate(24 24)">
-      <rect class="lane" x="100" y="154" width="1452" height="74" rx="14" />
-      <rect class="lane-rail" x="16" y="154" width="80" height="74" rx="10" />
-      <text class="lane-title" x="56" y="195" text-anchor="middle">选择对象</text>
-      <rect class="lane" x="100" y="250" width="1452" height="458" rx="14" />
-      <rect class="lane-rail" x="16" y="250" width="80" height="458" rx="10" />
-      <text class="lane-title" x="56" y="483" text-anchor="middle">修改</text>
-      <rect class="lane" x="100" y="730" width="1452" height="74" rx="14" />
-      <rect class="lane-rail" x="16" y="730" width="80" height="74" rx="10" />
-      <text class="lane-title" x="56" y="771" text-anchor="middle">显示结果</text><line class="lifeline" x1="234" y1="140" x2="234" y2="880" /><line class="lifeline" x1="478" y1="140" x2="478" y2="880" /><line class="lifeline" x1="722" y1="140" x2="722" y2="880" /><line class="lifeline" x1="966" y1="140" x2="966" y2="880" /><line class="lifeline" x1="1210" y1="140" x2="1210" y2="880" /><line class="lifeline" x1="1454" y1="140" x2="1454" y2="880" />
+      <rect class="lane" x="120" y="174" width="1115" height="68" rx="14" />
+      <rect class="lane-rail" x="16" y="174" width="100" height="68" rx="10" />
+      <text class="lane-title" x="66" y="212" text-anchor="middle">选择对象</text>
+      <rect class="lane" x="120" y="264" width="1115" height="468" rx="14" />
+      <rect class="lane-rail" x="16" y="264" width="100" height="468" rx="10" />
+      <text class="lane-title" x="66" y="502" text-anchor="middle">修改</text>
+      <rect class="lane" x="120" y="754" width="1115" height="68" rx="14" />
+      <rect class="lane-rail" x="16" y="754" width="100" height="68" rx="10" />
+      <text class="lane-title" x="66" y="792" text-anchor="middle">显示结果</text><line class="lifeline" x1="224" y1="132" x2="224" y2="864" /><line class="lifeline" x1="407" y1="132" x2="407" y2="864" /><line class="lifeline" x1="602" y1="132" x2="602" y2="864" /><line class="lifeline" x1="794" y1="132" x2="794" y2="864" /><line class="lifeline" x1="974" y1="132" x2="974" y2="864" /><line class="lifeline" x1="1160.5" y1="132" x2="1160.5" y2="864" />
     <g class="participant type-actor status-context leaf">
-      <rect x="136" y="28" width="196" height="112" rx="12" />
+      <rect x="148" y="24" width="152" height="108" rx="8" />
       
-      <text class="type-mark" x="152" y="48" text-anchor="start">Actor</text>
+      <text class="type-mark" x="164" y="42">Actor</text>
       
+      <text class="title" x="164" y="60">财务运营</text>
       
-      <text class="title" x="152" y="66" text-anchor="start">财务运营</text>
-      
-      <text class="responsibility" x="152" y="84" text-anchor="start">发起对账并查看发票</text>
+      <text class="responsibility" x="164" y="78">发起对账并查看发票</text>
       
       
     </g>
     <g class="participant type-module status-context leaf">
-      <rect x="380" y="28" width="196" height="112" rx="12" />
+      <rect x="328" y="24" width="158" height="108" rx="8" />
       
-      <text class="type-mark" x="396" y="48" text-anchor="start">Module</text>
-      <text class="layer-mark" x="443" y="48" text-anchor="start">接口 / 编排</text>
+      <text class="type-mark" x="344" y="42">Module</text>
       
-      <text class="title" x="396" y="66" text-anchor="start">注册计费能力</text>
-      <text class="identity" x="396" y="84" text-anchor="start">registerBilling</text>
+      <text class="title" x="344" y="60">注册计费能力</text>
+      <text class="identity" x="344" y="78">registerBilling</text>
       
       
-      <text class="file-badge" x="564" y="128" text-anchor="end">registerBilling.ts</text>
+      <text class="file-badge" x="474" y="122" text-anchor="end">registerBilling.ts</text>
     </g>
     <g class="participant type-unit status-context leaf">
-      <rect x="624" y="28" width="196" height="112" rx="12" />
+      <rect x="514" y="24" width="176" height="108" rx="8" />
       
-      <text class="type-mark" x="640" y="48" text-anchor="start">Unit</text>
-      <text class="layer-mark" x="674" y="48" text-anchor="start">领域 / 应用</text>
+      <text class="type-mark" x="530" y="42">Unit</text>
       
-      <text class="title" x="640" y="66" text-anchor="start">发票工具</text>
-      <text class="identity" x="640" y="84" text-anchor="start">invoiceTool</text>
+      <text class="title" x="530" y="60">发票工具</text>
+      <text class="identity" x="530" y="78">invoiceTool</text>
       
       
       <g class="contract-port">
-        <circle cx="820" cy="98" r="4.5" />
-        <text x="800" y="102" text-anchor="end">InvoiceToolContract</text>
+        <rect x="530" y="87" width="8" height="8" rx="2" />
+        <text x="542" y="96">InvoiceToolContract</text>
       </g>
-      <text class="file-badge" x="808" y="128" text-anchor="end">invoiceTool.ts</text>
+      <text class="file-badge" x="678" y="122" text-anchor="end">invoiceTool.ts</text>
     </g>
     <g class="participant type-store status-context leaf">
-      <rect x="868" y="28" width="196" height="112" rx="12" />
+      <rect x="718" y="24" width="152" height="108" rx="8" />
       
-      <text class="type-mark" x="884" y="48" text-anchor="start">Store</text>
+      <text class="type-mark" x="734" y="42">Store</text>
       
-      
-      <text class="title" x="884" y="66" text-anchor="start">发票表</text>
-      <text class="identity" x="884" y="84" text-anchor="start">invoices</text>
+      <text class="title" x="734" y="60">发票表</text>
+      <text class="identity" x="734" y="78">invoices</text>
       
       
       
     </g>
     <g class="participant type-module status-context leaf">
-      <rect x="1112" y="28" width="196" height="112" rx="12" />
+      <rect x="898" y="24" width="152" height="108" rx="8" />
       
-      <text class="type-mark" x="1128" y="48" text-anchor="start">Module</text>
-      <text class="layer-mark" x="1175" y="48" text-anchor="start">持久化 / 网关</text>
+      <text class="type-mark" x="914" y="42">Module</text>
       
-      <text class="title" x="1128" y="66" text-anchor="start">支付提供方适配</text>
-      <text class="identity" x="1128" y="84" text-anchor="start">providerApi</text>
+      <text class="title" x="914" y="60">支付提供方适配</text>
+      <text class="identity" x="914" y="78">providerApi</text>
       
       
-      <text class="file-badge" x="1296" y="128" text-anchor="end">providerApi.ts</text>
+      <text class="file-badge" x="1038" y="122" text-anchor="end">providerApi.ts</text>
     </g>
     <g class="participant type-system status-context leaf">
-      <rect x="1356" y="28" width="196" height="112" rx="12" />
+      <rect x="1078" y="24" width="165" height="108" rx="8" />
       
-      <text class="type-mark" x="1372" y="48" text-anchor="start">System</text>
+      <text class="type-mark" x="1094" y="42">System</text>
       
-      
-      <text class="title" x="1372" y="66" text-anchor="start">Payment Provider</text>
-      <text class="identity" x="1372" y="84" text-anchor="start">payment-provider</text>
+      <text class="title" x="1094" y="60">Payment Provider</text>
+      <text class="identity" x="1094" y="78">payment-provider</text>
       
       
       
     </g>
         <g class="branch">
-          <rect x="116" y="554" width="1436" height="238" rx="10" />
-          <text x="132" y="572">alt 支付提供方可用</text>
+          <rect x="136" y="562" width="1099" height="254" rx="10" />
+          <text x="152" y="580">alt 支付提供方可用</text>
         </g>
     <g class="message kind-call status-context">
-      <line x1="234" y1="188" x2="478" y2="188" />
-      <polygon class="arrow-head" points="478,188 470,183.6 470,192.4" />
-      <text class="message-label" x="356" y="166" text-anchor="middle">提交开票请求</text>
-      <text class="message-method" x="356" y="180" text-anchor="middle">createInvoice(accountId)</text>
-      <text class="message-detail" x="356" y="204" text-anchor="middle">accountId 指向当前客户账户</text>
+      <line x1="224" y1="208" x2="407" y2="208" />
+      <polygon class="arrow-head" points="407,208 399,203.6 399,212.4" />
+      <text class="message-label" x="315.5" y="184" text-anchor="middle">提交开票请求</text><text class="message-method" x="315.5" y="200" text-anchor="middle">createInvoice(accountId)</text>
+      <text class="message-detail" x="315.5" y="224" text-anchor="middle">accountId 指向当前客户账户</text>
       
     </g>
     <g class="message kind-call status-context">
-      <line x1="478" y1="284" x2="722" y2="284" />
-      <polygon class="arrow-head" points="722,284 714,279.6 714,288.4" />
-      <text class="message-label" x="600" y="262" text-anchor="middle">生成发票草稿</text>
-      <text class="message-method" x="600" y="276" text-anchor="middle">writeDraft(accountId, period, amount)</text>
-      <text class="message-detail" x="600" y="300" text-anchor="middle">accountId、账期和应税金额</text>
+      <line x1="407" y1="298" x2="602" y2="298" />
+      <polygon class="arrow-head" points="602,298 594,293.6 594,302.4" />
+      <text class="message-label" x="504.5" y="274" text-anchor="middle">生成发票草稿</text><text class="message-method" x="504.5" y="290" text-anchor="middle">writeDraft(accountId, period, amount)</text>
+      <text class="message-detail" x="504.5" y="314" text-anchor="middle">accountId、账期和应税金额</text>
       
     </g>
     <g class="message kind-call status-context">
-      <line x1="722" y1="380" x2="966" y2="380" />
-      <polygon class="arrow-head" points="966,380 958,375.6 958,384.4" />
-      <text class="message-label" x="844" y="358" text-anchor="middle">写入发票行</text>
-      <text class="message-method" x="844" y="372" text-anchor="middle">insert(invoiceId, lineItems)</text>
-      <text class="message-detail" x="844" y="396" text-anchor="middle">invoiceId 与行项目金额</text>
+      <line x1="602" y1="388" x2="794" y2="388" />
+      <polygon class="arrow-head" points="794,388 786,383.6 786,392.4" />
+      <text class="message-label" x="698" y="364" text-anchor="middle">写入发票行</text><text class="message-method" x="698" y="380" text-anchor="middle">insert(invoiceId, lineItems)</text>
+      <text class="message-detail" x="698" y="404" text-anchor="middle">invoiceId 与行项目金额</text>
       
     </g>
     <g class="message kind-async status-context">
-      <line x1="722" y1="476" x2="1210" y2="476" />
-      <polygon class="arrow-head" points="1210,476 1202,471.6 1202,480.4" />
-      <text class="message-label" x="966" y="454" text-anchor="middle">请求外部收款</text>
-      <text class="message-method" x="966" y="468" text-anchor="middle">createCharge(invoiceId, amount)</text>
-      <text class="message-detail" x="966" y="492" text-anchor="middle">invoiceId 和收款金额</text>
+      <line x1="602" y1="478" x2="974" y2="478" />
+      <polygon class="arrow-head" points="974,478 966,473.6 966,482.4" />
+      <text class="message-label" x="788" y="454" text-anchor="middle">请求外部收款</text><text class="message-method" x="788" y="470" text-anchor="middle">createCharge(invoiceId, amount)</text>
+      <text class="message-detail" x="788" y="494" text-anchor="middle">invoiceId 和收款金额</text>
       
     </g>
     <g class="message kind-call status-context">
-      <line x1="1210" y1="600" x2="1454" y2="600" />
-      <polygon class="arrow-head" points="1454,600 1446,595.6 1446,604.4" />
-      <text class="message-label" x="1332" y="578" text-anchor="middle">创建支付单</text>
-      <text class="message-method" x="1332" y="592" text-anchor="middle">POST /charges(amount, currency, returnUrl)</text>
-      <text class="message-detail" x="1332" y="616" text-anchor="middle">amount、currency 和回跳地址</text>
+      <line x1="974" y1="608" x2="1160.5" y2="608" />
+      <polygon class="arrow-head" points="1160.5,608 1152.5,603.6 1152.5,612.4" />
+      <text class="message-label" x="1067.25" y="568" text-anchor="middle">创建支付单</text><text class="message-method" x="1067.25" y="584" text-anchor="middle">POST /charges(amount, currency,</text><text class="message-method" x="1067.25" y="600" text-anchor="middle">returnUrl)</text>
+      <text class="message-detail" x="1067.25" y="624" text-anchor="middle">amount、currency 和回跳地址</text>
       
     </g>
     <g class="message kind-return status-context">
-      <line x1="1454" y1="668" x2="1210" y2="668" />
-      <polygon class="arrow-head" points="1210,668 1218,672.4 1218,663.6" />
-      <text class="message-label" x="1332" y="646" text-anchor="middle">返回支付单号</text>
-      <text class="message-method" x="1332" y="660" text-anchor="middle">return(chargeId)</text>
-      <text class="message-detail" x="1332" y="684" text-anchor="middle">chargeId 供后续对账</text>
+      <line x1="1160.5" y1="698" x2="974" y2="698" />
+      <polygon class="arrow-head" points="974,698 982,702.4 982,693.6" />
+      <text class="message-label" x="1067.25" y="674" text-anchor="middle">返回支付单号</text><text class="message-method" x="1067.25" y="690" text-anchor="middle">return(chargeId)</text>
+      <text class="message-detail" x="1067.25" y="714" text-anchor="middle">chargeId 供后续对账</text>
       
     </g>
     <g class="message kind-return status-context">
-      <line x1="478" y1="764" x2="234" y2="764" />
-      <polygon class="arrow-head" points="234,764 242,768.4 242,759.6" />
-      <text class="message-label" x="356" y="742" text-anchor="middle">展示发票状态</text>
-      <text class="message-method" x="356" y="756" text-anchor="middle">return(status, invoiceId)</text>
-      <text class="message-detail" x="356" y="780" text-anchor="middle">status 和 invoiceId</text>
+      <line x1="407" y1="788" x2="224" y2="788" />
+      <polygon class="arrow-head" points="224,788 232,792.4 232,783.6" />
+      <text class="message-label" x="315.5" y="764" text-anchor="middle">展示发票状态</text><text class="message-method" x="315.5" y="780" text-anchor="middle">return(status, invoiceId)</text>
+      <text class="message-detail" x="315.5" y="804" text-anchor="middle">status 和 invoiceId</text>
       
     </g></g>
-  </svg></div></section></main>
-  <script>
-    document.querySelectorAll(".tab").forEach((tab) => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab, .panel").forEach((el) => el.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.target)?.classList.add("active");
-      });
-    });
-  </script>
+  </svg></div>
+      </figure>
+  </section>
+    
+    
+    
+    
+  </article>
 </body>
 </html>
