@@ -43,6 +43,10 @@
 
 描述模块协作时使用“集成”；项目测试层名使用 `Integration`。
 
+讲现有代码如何判定、生成、校验、编译或变换时，**正文用短伪代码**。段落只写何时运行、用户看到什么。不要把分支步骤改写成散文，也不要用架构图、时序图或大段代码引用代替算法。
+
+伪代码用本义动词和真实字段名，不抄函数签名，不列完整类型。需要定位入口时另给代码引用；引用不能替代伪代码。范围内没有这类逻辑时省略，不编造算法。
+
 ## 4. 组织导览
 
 按范围和复杂度选择以下模块，不为固定模板生成空章节：
@@ -51,25 +55,25 @@
 2. **简要结论**：用户侧行为或主要变化。
 3. **架构结构**：需要时展示包含关系、分层、关键 Unit、Contract 和依赖。
 4. **用户路径**：用户从哪里进入、做什么、得到什么；必要时补充失败、空态和限制。
-5. **运行顺序**：用调用链或时序图解释关键参数、副作用和结果。
-6. **关键状态与数据来源**：只在存在持久化、缓存或派生数据时展示。
-7. **变化摘要**：仅变化视图，分别说明架构、调用、状态和测试变化。
-8. **测试结构**：测试属于当前范围且有理解价值时展示。
-9. **关键实现规则**：列出 3–7 条不能误解的机制及代码位置。
-10. **阅读入口**：指定区域保持精简；整体仓库按 Container / Component 分组推荐入口，不固定文件数量。
+5. **运行顺序**：用调用链或时序图解释谁在何时调用谁、有什么副作用。判定和变换本身仍用伪代码，不靠时序图讲算法。
+6. **算法**：范围内若有生成、校验、编译或分支，用短伪代码写出；可紧挨运行顺序，不能省略。
+7. **关键状态与数据来源**：只在存在持久化、缓存或派生数据时展示。
+8. **变化摘要**：仅变化视图，分别说明架构、调用、状态和测试变化。
+9. **测试结构**：测试属于当前范围且有理解价值时展示。
+10. **关键实现规则**：3–7 条不能误解的机制，用短伪代码或伪代码里的不变式写出，并给代码位置。不要只列结论句。
+11. **阅读入口**：指定区域保持精简；整体仓库按 Container / Component 分组推荐入口，不固定文件数量。
 
-简单区域只需结论、调用说明和阅读入口。整体仓库优先给出全局架构图、2–4 条关键用户路径、核心 Store / 外部 System 和阅读入口，不逐文件复述。
+简单区域只需结论、调用说明、必要的伪代码和阅读入口。整体仓库优先给出全局架构图、2–4 条关键用户路径、核心 Store / 外部 System 和阅读入口，不逐文件复述。
 
 ## 5. 选择视觉形式
 
-只使用能让当前重点更清楚的最小视觉：
+只使用能让当前重点更清楚的最小视觉。第 3 节要求的伪代码不是可选视觉，架构图和时序图不能替代它。
 
-- 规则或算法用简短伪代码。
 - 简单调用顺序用 call tree；多参与方、并发或回调用时序图。
 - 系统组成、代码包含、架构分层和关键静态依赖用架构结构图；不要用时序图承载静态结构。
 - UI 组合关系用组件树，文件职责变化用浅层文件树。
 - 重点是「改了什么」且上下文结构已知时用 diff；省略上下文会隐藏职责或顺序时展示完整结构。
-- 内容密集、需要颜色或交互才能读清时生成一个聚焦的 HTML 文件并打开。
+- 内容密集、需要颜色或交互才能读清时，先输出 Walkthrough IR，再调用本地渲染器生成 HTML 并打开。不要手写 HTML、CSS 或坐标。
 
 ### 当前视图与变化视图
 
@@ -89,7 +93,7 @@
 
 时序图默认展示主要成功路径；有重要分支时在图例标明场景，不把互斥路径串成一条调用链。
 
-Lane 按用户路径的运行阶段和主导目标划分，例如「选择能力 → 修改文档 → 显示结果」，不按目录或技术层分组。每个调用只属于一个阶段；目标未变不另起 Lane，简单调用链省略 Lane。
+Lane 按用户路径的运行阶段和主导目标划分，例如「选择对象 → 修改 → 显示结果」，不按目录或技术层分组。每个调用只属于一个阶段；目标未变不另起 Lane，简单调用链省略 Lane。
 
 Lane 与测试场景分类是两个维度：
 
@@ -102,7 +106,7 @@ Lane 与测试场景分类是两个维度：
 
 #### 概念模型
 
-代码包含关系统一使用以下层级：
+代码包含关系统一使用以下层级。这是同一套归属，不是要用户点选下钻的四张图。
 
 ```text
 Software System
@@ -112,13 +116,15 @@ Software System
             └── Unit
 ```
 
-- **Software System**：提供完整产品能力的软件系统，例如 Vis、飞书。外部 SaaS 也属于 System。
-- **Runtime Container**：可独立运行的应用、进程或前端应用，例如 Backend Node 进程、Frontend SPA、Desktop。这里的 Container 不专指 Docker。
+- **Software System**：提供完整产品能力的软件系统，例如当前产品或某个外部 SaaS。外部服务也属于 System。
+- **Runtime Container**：可独立运行的应用、进程或前端应用，例如后端进程、前端应用、桌面客户端。这里的 Container 不专指 Docker。
 - **Architectural Component**：Container 内围绕一项完整能力组织、具有明确公共入口并隐藏多个内部 Module / Unit 的架构边界。Component 是语言无关概念。
 - **Language Module**：严格使用当前语言的定义，不能把普通目录或业务能力随意称为 Module。
 - **Unit**：具有明确运行时身份和可调用行为的最小封装单元。TypeScript / Java 的对象或 class 实例、Rust 的 struct 实例都属于 Unit，不按语言语法拆成多种视觉类型。
 
 Actor 和 Store 可直接作为参与方，但不属于代码包含链。React Component 只有承接入口、关键状态、副作用或用户可见结果时才作为 Unit。
+
+向 C4 学的是「同一套关系、不同颗粒度」，不是照抄它的四张图、单容器下钻或默认隐藏代码。前后端等不同 Container 可以画在同一张图里。Component 内部的 Unit 要披露，按层逐次展开，不要一次倒出所有文件。
 
 Component 应具备内聚能力、明确入口、内部隐藏和相对独立演进。Plugin、Integration、Feature、Domain 仅在代码库确有该边界时使用；目录本身不能证明 Component 存在，也不显示含义模糊的「Group」。
 
@@ -135,16 +141,34 @@ Component 应具备内聚能力、明确入口、内部隐藏和相对独立演�
 
 Interface、trait 和 protocol 统一称为 **Contract**。它是 Unit、Module 或 Component 遵循 / 提供的关系，用边界端口和名称表达；只有解释静态接口依赖时才独立成节点。
 
-架构分层与包含关系正交。Controller、Service、Model、Repository、Gateway、Presentation 等回答「负责什么」，System、Container、Component、Module、Unit 回答「属于谁」。分层使用参与方 Box 的背景色表达；图例同时写出颜色对应的层名，不能只靠颜色传达。包含关系的背景框保持中性，不能与分层颜色混用。沿用仓库已有层名和职责；Repository 与 Service 同属一个 Component 时仍保持独立职责。
+架构分层与包含关系正交。Controller、Service、Model、Repository、Gateway、Presentation 等回答「负责什么」，System、Container、Component、Module、Unit 回答「属于谁」。沿用仓库已有层名和职责；Repository 与 Service 同属一个 Component 时仍保持独立职责。包含关系的背景框保持中性，不能与分层颜色混用。
+
+#### 分层顺序与方向
+
+结构图默认从上到下。图注写明主方向。
+
+职责 Lane 只出现在以 Unit 为主要查看对象的最细一张。更粗的图只看 System / Container / Component 时，按参与方关系排列，不画 Presentation / Controller / Service 色带。
+
+以 Unit 为主时：节点按该仓库真实职责层排列，层名沿用仓库自己的叫法。常见栈可以排成 `Presentation → 接口 / 编排 → 领域 / 应用 → 持久化 / 网关 → Store`。
+
+- 整张图用通栏横向 Lane 作坐标系，不要只在焦点小框里分层。一侧写层名，同层节点沿另一轴排列；相邻 Lane 用分割线分开。背景色只作辅助识别，图例写出层名。
+- 焦点拆成 Unit；邻居仍是大块，但落在对应层上。
+- 没有的层直接省略，不能为填满模板虚构节点。
+- 用户明确要求并排主方向时才改用从左到右的 Column。
+- 真实的主要关系尽量沿主方向。反向依赖必须显式画出；事件和异步通知可用反向虚线。不存在的边不要为了方向整齐而补上。
+- 一张图不混用两套主方向。
 
 #### 展示颗粒度与包含关系
 
-展示颗粒度由讲解目的决定。焦点区域可以展开到 Unit，上下文区域可以保留为 Component、Container 或 System；不要求全图同级。混合颗粒度时必须明确区分：
+结构图像看地图：先看整张，再放大其中一块。放大的那一块用更细的盒子；四周仍是原来的大块，用来保住重要周边关系。平铺这两张，不做成点选下钻。
 
-- 展开的 System、Container 或 Component 使用带名称的嵌套背景框，直接包住对应多列参与方；背景框没有生命线。
-- 折叠的 System、Container、Component 或 Module 使用参与方 Box 和对应图标，并产生生命线。
-- 只包住一个参与方、没有提供当前问题所需边界信息的背景框应省略。目录路径可以留在 Box 中，不据此编造边界。
-- 同一容器中的参与方尽量相邻排列；外部上下文可以保持折叠，即使焦点区域已经展开到 Unit。
+1. 先画整图。不同 Container 可以在一起，焦点和邻居都用同一颗粒度，不分层。
+2. 再画放大图。整张图分层。只把焦点 Component 展开到 Unit；邻居仍是大块，落在对应层上。
+3. 邻居连到焦点的公共入口，不把周边也拆开，也不把所有 Component 都拆到 Unit。
+
+粗图上的一条边，放大图里仍是同一条耦合：一端还是那个大块，另一端落到被展开盒子的入口 Unit。不要为了对齐而编造捷径，也不要把一条边拆成调用链。
+
+展开的 System、Container 或 Component 用带名称的嵌套背景框包住子节点；折叠的邻居用普通 Box。只包住一个子节点且没有解释价值的背景框省略。目录路径可以留在 Box 中，不据此编造边界。
 
 #### 参与方 Box
 
@@ -155,35 +179,60 @@ Box 主体只显示「类型图标 → 平实职责 → 代码身份」：
 3. Contract 使用 Box 边界上的端口图标和名称，不写成普通信息行。
 4. 没有代码身份、文件名或 Contract 时省略对应内容，不补占位符，不虚构类名。普通参数和结果类型不作为参与方；一个参与方承载多个无关职责时拆图。
 
-#### 示例：飞书文档主路径
+#### 示例：外部集成主路径
 
 ```text
-SYSTEM · Vis
+SYSTEM · Catalog App
 └── CONTAINER · Backend
-    └── COMPONENT · Feishu Integration
-        ├── TS MODULE · registerFeishuIntegration.ts
-        ├── TS MODULE · feishuFreeWrite.ts
-        │   └── UNIT · integrationTool
-        │       └── ○ IntegrationToolDefinition
-        └── TS MODULE · docxApi.ts
+    └── COMPONENT · Billing
+        ├── MODULE · registerBilling
+        ├── MODULE · invoiceWriter
+        │   └── UNIT · invoiceTool
+        │       └── ○ InvoiceToolContract
+        └── MODULE · providerApi
 
-EXTERNAL SYSTEM · Feishu OpenAPI
+EXTERNAL SYSTEM · Payment Provider
 ```
 
-这里的 Feishu Integration 是 Architectural Component：它通过注册入口向 `IntegrationRegistry` 暴露完整飞书能力，并隐藏多个内部 TypeScript Module。Backend 是 Runtime Container，不标为 Software System；飞书 OpenAPI 属于外部 Software System。
+Billing 是 Architectural Component：它通过注册入口暴露完整计费能力，并隐藏多个内部 Language Module。Backend 是 Runtime Container，不标为 Software System；支付提供方属于外部 Software System。文件名和语言以当前仓库为准，不从本示例照抄。
 
 ### 架构结构图展示规范
 
-架构结构图回答「系统由什么组成、代码属于哪里、处于哪一层、依赖指向哪里」，不替代时序图。
+架构结构图回答「系统由什么组成、代码属于哪里、处于哪一层、谁必须找到谁」，不替代时序图，也不替代伪代码。
 
-1. **选择焦点**：标题和图注写明范围。焦点 Component 展开到必要的 Language Module、Unit 和 Contract；上下文区域保留为折叠的 Component、Container 或外部 System。
-2. **显示包含关系**：使用中性的嵌套背景框包住多列内容，依次表达 System、Container、Component 和必要的 Language Module。折叠节点使用普通 Box；只有一个子节点且对当前问题没有解释价值的背景框省略。
-3. **突出关键 Unit**：对入口 / 出口、核心编排、关键决策、权威状态、持久化或外部网关、关键 Contract 实现使用较粗边框和 `KEY UNIT`。每张图通常只突出 5–8 个。
-4. **显示静态关系**：实线表示直接依赖或调用，虚线表示事件、异步通知或结构化结果；访问 Store 时标明 `read` / `write`。方法只在定义关键依赖时标在线上。
-5. **不照抄 UML**：不列完整字段、方法、可见性和继承细节；背景框已表达包含关系时，不再使用组合菱形。
-6. **适合截图**：HTML 使用全宽、无固定侧栏的 16:9 附近画布；图例置顶，核心结构尽量在首屏完整出现，过宽时保持字号并横向滚动。
+1. **选择颗粒度**：标题和图注写明这是整图还是放大哪一块。整图像地图；放大图只细化焦点，周边仍是大块。需要更粗或更细时另铺一张，不做成下钻。
+2. **显示包含关系**：使用中性的嵌套背景框包住当前展开的子节点。折叠节点使用普通 Box；只有一个子节点且没有解释价值的背景框省略。
+3. **显示分层顺序**：以 Unit 为主要查看对象时，用横向 Lane 和分割线排列真实职责层。不以 Unit 为主时不分层。
+4. **突出关键节点**：对入口、核心编排、权威状态或外部边界使用较粗边框。每张图通常只突出 5–8 个。
+5. **显示耦合**：箭头只表达跨边界耦合，细则见下一节。
+6. **不照抄 UML**：不列完整字段、方法、可见性和继承树；包含关系继续用背景框，不再使用组合菱形。
+7. **适合截图**：HTML 使用全宽、无固定侧栏的 16:9 附近画布；图例置顶，核心结构尽量在首屏完整出现，过宽时保持字号并横向滚动。
 
-架构结构图与时序图应复用同一套 System / Container / Component / Module / Unit、Contract、分层颜色、文件 Badge 和代码命名，避免同一对象在两张图中出现不同身份。
+#### 架构图的线与箭头
+
+箭头只回答：「这个盒子要完成职责，必须跨过哪条边界去找谁」。包含用底框，分层用色带，对外协议用端口。这三类都不是箭头。
+
+同时满足再画：
+
+- 跨过 Container、Component 或 Store，而不是同一个 Component 里相邻的两个函数。邻居连到焦点的公共入口。
+- 有可命名、会稳定一段时间的协议或资源，例如一条 HTTP、一个 tool、一张表、一类事件。没有协议的「它们应该协作」不画。
+- 去掉后结构会变。只是某次路径上的中间跳点，不画。
+- 粗图和细图是同一条耦合：粗图连到大块，细图落到入口，不另造捷径，也不把一条边拆成调用链。
+- 能在代码里对上证据：同进程调用、跨进程请求、事件或队列、Store 读写。证据用来证明边存在，不是把架构图写成调用清单。
+- 不穷举。只留当前问题最说得通、拿掉会改变结构的几条。
+
+同进程和跨进程请求用实线。事件和异步通知用虚线，可以反向。反向依赖必须画出来。不要为了方向整齐补不存在的边。
+
+线上写关系的性质，例如创建草稿、读写定义、查询明细。不写方法名、参数列表，也不写「依赖」「协作」。
+
+明确不画：
+
+- 同一 Component 内部的编排跳点，除非这次放大的问题就是这条内部耦合。
+- 一条用户路径上的每一步，以及同一条耦合换了个方法名再画一条。
+- 算法分支和互斥条件。那是伪代码。
+- 一次运行的顺序、方法和参数。那是时序图。
+
+架构图与时序图复用同一套 System / Container / Component / Module / Unit、Contract、分层颜色、文件 Badge 和代码命名，避免同一对象在两张图中出现不同身份。两张图共用节点身份，不共用画法：架构箭头说「这种协作在结构里存在」，一张图可以同时挂多条路径；时序箭头说「这个场景的这一步发生了」。
 
 #### 架构变化视图
 
@@ -217,7 +266,7 @@ EXTERNAL SYSTEM · Feishu OpenAPI
 
 #### 整体排版
 
-- 中性的嵌套背景框表达展开的 System / Container / Component 包含关系；参与方 Box 背景色表达架构分层，并在图例标注层名；Contract 端口表达接口关系。三者不能使用同一种视觉形式。
+- 中性的嵌套背景框表达展开的包含关系；以 Unit 为主时，横向 Lane 背景色和分割线表达职责分层，并在图例标注层名；Contract 端口与关系线表达跨边界耦合。三者不能使用同一种视觉形式。不以 Unit 为主时不画职责 Lane。
 - 顶部边界、参与方 Box、阶段标题、调用消息和返回消息形成稳定的视觉层次；相同类型使用一致图标、字号、字重、颜色和间距。
 - 阶段标题紧贴对应区域左上角，消息说明放在箭头上方且不与生命线、箭头或相邻消息重叠。
 - 优先让核心内容充分使用可用屏幕宽度。目录、图例和辅助导航价值较低时放到顶部、折叠或缩窄，不为固定侧栏长期预留大块宽度；时序图、结构图和数据密集区可以使用更宽的内容容器。
@@ -229,12 +278,36 @@ EXTERNAL SYSTEM · Feishu OpenAPI
 
 导览支持两种输出载体：
 
-- **对话**：适合简单的指定区域、单条调用链和短 diff 说明，默认使用。
-- **HTML**：适合用户明确要求 HTML、整体仓库范围、架构 / 时序变化图，或完整导览包含多个入口、调用路径、状态和文件关系。
+- **对话**：适合简单的指定区域、单条调用链和短 diff 说明，默认使用。对话只写摘要、伪代码和文件位置，不贴架构图或时序图的 HTML。
+- **HTML**：适合用户明确要求 HTML、整体仓库范围、架构 / 时序变化图，或完整导览包含多个入口、调用路径、状态和文件关系。由本地渲染器从 Walkthrough IR 生成，不由模型直接写出。
 
-用户明确选择时按其要求。整体仓库默认生成全宽 HTML；变化较多时使用状态图例、叠加 diff 或 Before / After。HTML 使用顶部紧凑导航、必要的折叠和颜色，并保留代码路径与行号；对话只给摘要和文件位置。
+### Walkthrough IR
 
-HTML 是本次讲解的本地可视化产物，不等同于 Walkthrough 文档，不默认提交。用户要求持久化文档时仍按「写入文档」处理。
+需要架构图或时序图时，模型只输出可校验的 JSON，不输出 HTML。HTML 是完整导览文档：章节按第 4 节组织，只有架构图和时序图用 SVG 嵌入。POC 实现放在 skill 目录，不写入产品包：
+
+```text
+.agents/skills/lhkit/scripts/understand/
+```
+
+IR 分为三部分：
+
+- `entities`：Actor、System、Container、Component、Module、Unit、Contract、Store。
+- `relations`：跨边界耦合，例如 `calls`、`reads`、`writes`、`implements`、`dependsOn`。包含关系用 `parentId`，不要再画 `contains` 边。
+- `scenarios`：有序步骤、参与方、Lane、分支和返回，专供时序图。不要从关系图拓扑反推调用顺序。调用步骤同时写 `method`、`params` 和 `detail`。横线上方显示 `createInvoice(accountId)`，下方显示参数本义，例如 `accountId 指向当前客户账户`。`params` 用字符串或字符串数组。没有 `params` 时用 `detail` 填括号，但仍单独显示本义。
+
+稳定 `id` 由「类型 + 代码身份」组成，例如 `unit.invoiceTool`。不要随机生成。每个实体、关系和步骤尽量带 `evidence`（文件路径和行号）。变化视图使用 `status`：`added` / `removed` / `modified` / `moved` / `context`。
+
+首轮把完整 snapshot 写入 `.lh/understand/graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。
+
+```text
+node .agents/skills/lhkit/scripts/understand/cli.mjs save --input <snapshot.json>
+node .agents/skills/lhkit/scripts/understand/cli.mjs apply --patch <patch.json>
+node .agents/skills/lhkit/scripts/understand/cli.mjs render --store .lh/understand/graph.json --open
+```
+
+也可以直接 `render --input <snapshot.json> --open`，跳过本地存储。渲染器使用 ELK.js 计算架构布局，时序图使用确定性坐标；二者共用 SVG 主题。存储或校验失败时，只在对话中继续结构化导览，不要改回手写 HTML。
+
+用户明确选择时按其要求。整体仓库默认渲染全宽 HTML；变化较多时由渲染器使用状态图例、叠加 diff 或 Before / After。HTML 是本次讲解的本地可视化产物，默认写入 `.lh/understand/`，不等同于 Walkthrough 文档，不默认提交。用户要求持久化文档时仍按「写入文档」处理。
 
 ## 7. 理解测试
 
@@ -250,10 +323,10 @@ HTML 是本次讲解的本地可视化产物，不等同于 Walkthrough 文档�
 使用 `+` / `-` 展示变化，每条 `it` 标注主要分类。
 
 ```diff
-backend/tests/unit/report/reportDsl.test.ts
-  被测对象：backend/modules/report/reportDsl.ts · resolveReportDsl()
-- describe('Report 测试')
-+ describe('resolveReportDsl 版本读取')
+tests/unit/billing/invoiceDsl.test.ts
+  被测对象：billing/invoiceDsl · resolveInvoiceDsl()
+- describe('Invoice 测试')
++ describe('resolveInvoiceDsl 版本读取')
 -   it('旧字段不会被回填') 〔已删除逻辑〕
 +   it('当前版本数据解析成功') 〔Happy path〕
 +   it('缺少 version 时按 v1 升级') 〔边界：缺失版本〕
@@ -291,7 +364,8 @@ docs/design/[ID]_Walkthrough.md
 
 - 范围与视图明确；变化视图记录了基线和当前端，整体仓库视图给出了全局架构而不是文件清单。
 - 用户可以说清功能从哪个入口开始，最终读取或写入什么。
-- 关键参与方的归属和调用关系清楚，内部名称第一次出现时有职责说明。
+- 范围内的判定、生成、校验、编译或变换已用短伪代码写出，没有只靠段落、架构图或时序图代替。
+- 关键参与方的归属和跨边界耦合清楚，内部名称第一次出现时有职责说明。架构图箭头没有画成调用链或算法。
 - 架构图、时序图和测试展示使用一致的当前 / 变化语义；变化元素与必要上下文可以区分。
 - 代码与文档差异已明确标出。
 - 引用来自当前文件并可定位。

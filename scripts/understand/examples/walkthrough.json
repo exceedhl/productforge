@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "revision": 1,
+  "title": "Billing 外部集成主路径",
+  "repository": {
+    "root": "/example/catalog-app",
+    "commit": "demo",
+    "workingTreeFingerprint": "demo"
+  },
+  "entities": [
+    {
+      "id": "actor.finance",
+      "type": "actor",
+      "title": "财务运营",
+      "responsibility": "发起对账并查看发票"
+    },
+    {
+      "id": "system.catalog",
+      "type": "system",
+      "title": "Catalog App",
+      "codeIdentity": "catalog-app"
+    },
+    {
+      "id": "container.backend",
+      "type": "container",
+      "title": "Backend",
+      "codeIdentity": "backend",
+      "parentId": "system.catalog",
+      "layer": "接口 / 编排"
+    },
+    {
+      "id": "component.billing",
+      "type": "component",
+      "title": "Billing",
+      "codeIdentity": "billing",
+      "parentId": "container.backend",
+      "responsibility": "暴露计费注册入口并隐藏内部模块"
+    },
+    {
+      "id": "module.registerBilling",
+      "type": "module",
+      "title": "注册计费能力",
+      "codeIdentity": "registerBilling",
+      "file": "billing/registerBilling.ts",
+      "parentId": "component.billing",
+      "layer": "接口 / 编排"
+    },
+    {
+      "id": "module.invoiceWriter",
+      "type": "module",
+      "title": "写入发票",
+      "codeIdentity": "invoiceWriter",
+      "file": "billing/invoiceWriter.ts",
+      "parentId": "component.billing",
+      "layer": "领域 / 应用"
+    },
+    {
+      "id": "unit.invoiceTool",
+      "type": "unit",
+      "title": "发票工具",
+      "codeIdentity": "invoiceTool",
+      "file": "billing/invoiceTool.ts",
+      "parentId": "module.invoiceWriter",
+      "layer": "领域 / 应用"
+    },
+    {
+      "id": "contract.invoiceTool",
+      "type": "contract",
+      "title": "InvoiceToolContract",
+      "codeIdentity": "InvoiceToolContract",
+      "parentId": "unit.invoiceTool"
+    },
+    {
+      "id": "module.providerApi",
+      "type": "module",
+      "title": "支付提供方适配",
+      "codeIdentity": "providerApi",
+      "file": "billing/providerApi.ts",
+      "parentId": "component.billing",
+      "layer": "持久化 / 网关"
+    },
+    {
+      "id": "store.invoices",
+      "type": "store",
+      "title": "发票表",
+      "codeIdentity": "invoices",
+      "parentId": "container.backend",
+      "layer": "Store"
+    },
+    {
+      "id": "system.payment",
+      "type": "system",
+      "title": "Payment Provider",
+      "codeIdentity": "payment-provider"
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel.register-to-writer",
+      "type": "dependsOn",
+      "sourceId": "module.registerBilling",
+      "targetId": "module.invoiceWriter",
+      "label": "注册写入入口",
+      "protocol": "in-process"
+    },
+    {
+      "id": "rel.writer-to-store",
+      "type": "writes",
+      "sourceId": "unit.invoiceTool",
+      "targetId": "store.invoices",
+      "label": "写入发票定义",
+      "protocol": "table"
+    },
+    {
+      "id": "rel.provider-to-payment",
+      "type": "calls",
+      "sourceId": "module.providerApi",
+      "targetId": "system.payment",
+      "label": "创建收款",
+      "protocol": "HTTPS"
+    },
+    {
+      "id": "rel.tool-implements",
+      "type": "implements",
+      "sourceId": "unit.invoiceTool",
+      "targetId": "contract.invoiceTool",
+      "label": "实现合同"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "scenario.create-invoice",
+      "title": "创建发票主路径",
+      "participantIds": [
+        "actor.finance",
+        "module.registerBilling",
+        "unit.invoiceTool",
+        "store.invoices",
+        "module.providerApi",
+        "system.payment"
+      ],
+      "lanes": [
+        { "id": "lane.select", "title": "选择对象" },
+        { "id": "lane.write", "title": "修改" },
+        { "id": "lane.show", "title": "显示结果" }
+      ],
+      "steps": [
+        {
+          "id": "step.request",
+          "order": 1,
+          "kind": "call",
+          "fromId": "actor.finance",
+          "toId": "module.registerBilling",
+          "laneId": "lane.select",
+          "label": "提交开票请求",
+          "method": "createInvoice",
+          "params": ["accountId"],
+          "detail": "accountId 指向当前客户账户"
+        },
+        {
+          "id": "step.write",
+          "order": 2,
+          "kind": "call",
+          "fromId": "module.registerBilling",
+          "toId": "unit.invoiceTool",
+          "laneId": "lane.write",
+          "label": "生成发票草稿",
+          "method": "writeDraft",
+          "params": ["accountId", "period", "amount"],
+          "detail": "accountId、账期和应税金额"
+        },
+        {
+          "id": "step.persist",
+          "order": 3,
+          "kind": "call",
+          "fromId": "unit.invoiceTool",
+          "toId": "store.invoices",
+          "laneId": "lane.write",
+          "label": "写入发票行",
+          "method": "insert",
+          "params": ["invoiceId", "lineItems"],
+          "detail": "invoiceId 与行项目金额"
+        },
+        {
+          "id": "step.charge",
+          "order": 4,
+          "kind": "async",
+          "fromId": "unit.invoiceTool",
+          "toId": "module.providerApi",
+          "laneId": "lane.write",
+          "label": "请求外部收款",
+          "method": "createCharge",
+          "params": ["invoiceId", "amount"],
+          "detail": "invoiceId 和收款金额"
+        },
+        {
+          "id": "step.provider",
+          "order": 5,
+          "kind": "call",
+          "fromId": "module.providerApi",
+          "toId": "system.payment",
+          "laneId": "lane.write",
+          "label": "创建支付单",
+          "method": "POST /charges",
+          "params": ["amount", "currency", "returnUrl"],
+          "detail": "amount、currency 和回跳地址",
+          "branch": { "position": "start", "label": "alt 支付提供方可用" }
+        },
+        {
+          "id": "step.provider-return",
+          "order": 6,
+          "kind": "return",
+          "fromId": "system.payment",
+          "toId": "module.providerApi",
+          "laneId": "lane.write",
+          "label": "返回支付单号",
+          "params": ["chargeId"],
+          "detail": "chargeId 供后续对账"
+        },
+        {
+          "id": "step.show",
+          "order": 7,
+          "kind": "return",
+          "fromId": "module.registerBilling",
+          "toId": "actor.finance",
+          "laneId": "lane.show",
+          "label": "展示发票状态",
+          "params": ["status", "invoiceId"],
+          "detail": "status 和 invoiceId",
+          "branch": { "position": "end" }
+        }
+      ]
+    }
+  ]
+}

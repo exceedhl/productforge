@@ -1,0 +1,11 @@
+{
+  "name": "@lhkit/understand-renderer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Walkthrough IR renderer for /lh understand. ELK.js is vendored; do not npm install from the monorepo root.",
+  "scripts": {
+    "check": "node cli.mjs validate --input examples/walkthrough.json",
+    "render:example": "node cli.mjs render --input examples/walkthrough.json --output examples/walkthrough.html"
+  }
+}

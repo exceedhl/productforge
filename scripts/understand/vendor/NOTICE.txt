@@ -1,0 +1,2 @@
+elk.bundled.js is ELK.js 0.12.0, Eclipse Public License 2.0.
+https://github.com/kieler/elkjs

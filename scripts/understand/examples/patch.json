@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "baseRevision": 1,
+  "operations": [
+    {
+      "op": "upsertEntity",
+      "value": {
+        "id": "unit.invoiceNotifier",
+        "type": "unit",
+        "title": "发票通知",
+        "codeIdentity": "invoiceNotifier",
+        "file": "billing/invoiceNotifier.ts",
+        "parentId": "module.invoiceWriter",
+        "status": "added",
+        "responsibility": "在写入成功后发出通知"
+      }
+    },
+    {
+      "op": "upsertRelation",
+      "value": {
+        "id": "rel.tool-to-notifier",
+        "type": "publishes",
+        "sourceId": "unit.invoiceTool",
+        "targetId": "unit.invoiceNotifier",
+        "label": "发票已写入",
+        "status": "added"
+      }
+    }
+  ]
+}
