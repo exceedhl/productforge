@@ -1,6 +1,6 @@
 # 代码导览
 
-`/lh understand` 为现有代码或改动生成结构化导览，解释整体架构、入口、调用、数据和测试。仅在用户明确调用，或明确要求代码导览、架构 / 时序可视化、当前结构或改动讲解时进入。
+`/pf understand` 为现有代码或改动生成结构化导览，解释整体架构、入口、调用、数据和测试。仅在用户明确调用，或明确要求代码导览、架构 / 时序可视化、当前结构或改动讲解时进入。
 
 单个符号问题、故障诊断、实现、未来设计和代码评审不触发本工作流。`understand` 不评判严重度、不设计未来架构，也不修改生产代码。
 
@@ -147,14 +147,16 @@ Interface、trait 和 protocol 统一称为 **Contract**。它是 Unit、Module 
 
 结构图默认从上到下。图注写明主方向。
 
-职责 Lane 只出现在以 Unit 为主要查看对象的最细一张。更粗的图只看 System / Container / Component 时，按参与方关系排列，不画分层色带。
+职责 Lane 只出现在放大图，并且以焦点里展开出来的 Unit 为查看对象。整图上焦点是收起来的，按参与方关系排列，不画分层色带。
 
-以 Unit 为主时：节点按**代码里真实存在、且叶子节点写明了的**职责层排列。层名沿用仓库自己的叫法，例如 `编排`、`判定`、`落盘`。`Presentation → 接口 / 编排 → 领域 / 应用 → 持久化 / 网关 → Store` 只是常见栈的例子，不是默认模板，不能按 Controller / Model 硬套。
+以 Unit 为主时：节点按**代码里真实存在、且叶子节点写明了的**职责层排列。层名沿用仓库自己的叫法，例如 `编排`、`判定`、`落盘`。`Presentation → 接口 / 编排 → 领域 / 应用 → 持久化 / 网关 → Store` 只是常见栈的例子，不是默认模板，不能按 Controller / Model 硬套。Actor 和 Store 不会因为类型自动变成一层。
 
 - 整张图用通栏横向 Lane 作坐标系，不要只在焦点小框里分层。一侧写完整层名，同层节点沿另一轴排列；相邻 Lane 用分割线分开。背景色只作辅助识别，图例写出层名。
 - 焦点拆成 Unit；邻居仍是大块，但只有它自己写了层名时才落进对应层。
-- 没有的层、没有叶子节点的层、层名对不上任何 Unit 的层、不同层的节点在 Y 向上叠在一起的层，全部不画。不要留空色带或没有归属的色带。色带画不出时，放大图按参与方从左到右重新排列，不要保留分层坐标只藏色带。
-- 叶子没有层名时不要从父 Container / Component 继承层，以免整张图被一个父层名涂满。
+- 焦点里每个 Unit 叶子都写了自己的层名，并且至少有两个不同层名，才画职责 Lane。否则按参与方关系从左到右排列，不画分层色带。
+- 层的上下顺序跟参与方里层名第一次出现的顺序一致。没有叶子的层、对不上任何 Unit 的层，不画。色带不能在垂直方向重叠，没有层名的框也不能落在色带里；做不到时这张图不画色带。
+- 色带是跨整图的坐标系，但不改变包含关系：同一层的 Unit 横向对齐，同时留在自己的父框里。嵌套框可以竖跨多条色带，因为它包着不同层的子节点。
+- 叶子没有层名时不要从父 Container / Component 继承层，以免整张图被一个父层名涂满。父框自己写了 `layer` 也只在它作为折叠单框出现时生效；已经展开的框不进色带。
 - 用户明确要求并排主方向时才改用从左到右的 Column。
 - 真实的主要关系尽量沿主方向。反向依赖必须显式画出；事件和异步通知可用反向虚线。不存在的边不要为了方向整齐而补上。
 - 一张图不混用两套主方向。
@@ -163,13 +165,21 @@ Interface、trait 和 protocol 统一称为 **Contract**。它是 Unit、Module 
 
 结构图像看地图：先看整张，再放大其中一块。放大的那一块用更细的盒子；四周仍是原来的大块，用来保住重要周边关系。平铺这两张，不做成点选下钻。
 
-1. 先画整图。不同 Container 可以在一起，焦点和邻居都用同一颗粒度，不分层。
-2. 再画放大图。只把焦点 Component 展开到 Unit；邻居仍是大块。有可对齐的职责层时整张图分层，否则按参与方关系排列。
-3. 邻居连到焦点的公共入口，不把周边也拆开，也不把所有 Component 都拆到 Unit。
+颗粒度不按参与方类型分档，由焦点决定。`focusParticipantId` 指向本次要讲的那一块，可以是任何有子参与方的 id，包括 Container、Component 和 Module。
+
+1. 先画整图：焦点收起来，和周边同为一个框。
+2. 再画放大图：焦点完全展开到它的全部后代；周边一律是不带子节点的单框。
+3. 邻居连到焦点的公共入口，不把周边也拆开。
+
+深浅由焦点放在哪一级决定。焦点放在 Container 上得到一张宽图，放在 Component 上得到一张窄而深的图。想少展开就把焦点往下挪，不要靠删参与方来控制。
+
+本地存储会随 patch 不断累积，所以单次渲染的范围也从焦点推出来，两张图用同一个集合：焦点自己和全部后代，加上与这个子树有边的参与方，再加上这些参与方的祖先链，让嵌套框不断层。集合以外的参与方这次不画。周边离焦点超过一跳时会消失；要保住整条主线，就把焦点放到更高一级的参与方上。
+
+没有写 `focusParticipantId` 时，只有恰好一个参与方带有 Module、Unit 或 Contract 后代才自动认定。认不出来就没有焦点，这时只画一张图。整图收起来后不足两个框，或者一条边都不剩，这张也不画。
 
 粗图上的一条边，放大图里仍是同一条耦合：一端还是那个大块，另一端落到被展开盒子的入口 Unit。不要为了对齐而编造捷径，也不要把一条边拆成调用链。
 
-展开的 System、Container 或 Component 用带名称的嵌套背景框包住子节点；折叠的邻居用普通 Box。只包住一个子节点且没有解释价值的背景框省略。目录路径可以留在 Box 中，不据此编造边界。
+展开的参与方用带名称的嵌套背景框包住子节点；折叠的邻居用普通 Box。只包住一个子节点且没有解释价值的背景框省略。目录路径可以留在 Box 中，不据此编造边界。
 
 #### 参与方 Box
 
@@ -287,28 +297,30 @@ Billing 是 Architectural Component：它通过注册入口暴露完整计费能
 需要架构图或时序图时，模型只输出可校验的 JSON，不输出 HTML。HTML 是完整导览文档：章节按第 4 节组织，只有架构图和时序图用 SVG 嵌入。POC 实现放在 skill 目录，不写入产品包：
 
 ```text
-.agents/skills/lhkit/scripts/understand/
+.agents/skills/productforge/scripts/understand/
 ```
 
 IR 分为三部分：
 
-- `entities`：Actor、System、Container、Component、Module、Unit、Contract、Store。
-- `relations`：跨边界耦合，例如 `calls`、`reads`、`writes`、`implements`、`dependsOn`。包含关系用 `parentId`，不要再画 `contains` 边。
+- `participants`：Actor、System、Container、Component、Module、Unit、Contract、Store。字段名用 `participants`，不要写 `entities`。包含关系只写 `parentId`，不要写 `contains`。
+- `relations`：跨边界耦合，例如 `calls`、`reads`、`writes`、`implements`、`dependsOn`。
 - `scenarios`：有序步骤、参与方、Lane、分支和返回，专供时序图。不要从关系图拓扑反推调用顺序。调用步骤同时写 `method`、`params` 和 `detail`。横线上方显示 `createInvoice(accountId)`，下方显示参数本义，例如 `accountId 指向当前客户账户`。`params` 用字符串或字符串数组。没有 `params` 时用 `detail` 填括号，但仍单独显示本义。
 
-稳定 `id` 由「类型 + 代码身份」组成，例如 `unit.invoiceTool`。不要随机生成。每个实体、关系和步骤尽量带 `evidence`（文件路径和行号）。变化视图使用 `status`：`added` / `removed` / `modified` / `moved` / `context`。
+稳定 `id` 由「类型 + 代码身份」组成，例如 `unit.invoiceTool`。不要随机生成。每个参与方、关系和步骤尽量带 `evidence`（文件路径和行号）。变化视图使用 `status`：`added` / `removed` / `modified` / `moved` / `context`。本次要展开的那一块写在 `focusParticipantId`，它同时决定两张图的范围和颗粒度，见第 5 节「展示颗粒度与包含关系」。
 
-首轮把完整 snapshot 写入 `.lh/understand/graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。
+`guide` 只放导览页的章节文案。架构图的内容来自 `participants` 和 `relations`，时序图的内容来自 `scenarios`。
+
+首轮把完整 snapshot 写入 `.productforge/understand/graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。`removeParticipant` 在该参与方仍有子参与方时拒绝，要先删除或改挂子参与方。
 
 ```text
-node .agents/skills/lhkit/scripts/understand/cli.mjs save --input <snapshot.json>
-node .agents/skills/lhkit/scripts/understand/cli.mjs apply --patch <patch.json>
-node .agents/skills/lhkit/scripts/understand/cli.mjs render --store .lh/understand/graph.json --open
+node .agents/skills/productforge/scripts/understand/cli.ts save --input <snapshot.json>
+node .agents/skills/productforge/scripts/understand/cli.ts apply --patch <patch.json>
+node .agents/skills/productforge/scripts/understand/cli.ts render --store .productforge/understand/graph.json --open
 ```
 
-也可以直接 `render --input <snapshot.json> --open`，跳过本地存储。渲染器使用 ELK.js 计算架构布局，时序图使用确定性坐标；二者共用 SVG 主题。存储或校验失败时，只在对话中继续结构化导览，不要改回手写 HTML。
+也可以直接 `render --input <snapshot.json> --open`，跳过本地存储。存储或校验失败时，只在对话中继续结构化导览，不要改回手写 HTML。
 
-用户明确选择时按其要求。整体仓库默认渲染全宽 HTML；变化较多时由渲染器使用状态图例、叠加 diff 或 Before / After。HTML 是本次讲解的本地可视化产物，默认写入 `.lh/understand/`，不等同于 Walkthrough 文档，不默认提交。用户要求持久化文档时仍按「写入文档」处理。
+用户明确选择时按其要求。整体仓库默认渲染全宽 HTML；变化较多时由渲染器使用状态图例、叠加 diff 或 Before / After。HTML 是本次讲解的本地可视化产物，默认写入 `.productforge/understand/`，不等同于 Walkthrough 文档，不默认提交。用户要求持久化文档时仍按「写入文档」处理。
 
 ## 7. 理解测试
 

@@ -1,6 +1,6 @@
 # Conventions 轴（通用）
 
-`/lh review` 的 **Conventions** 轴默认清单。Finding 前缀 **`N`**。
+`/pf review` 的 **Conventions** 轴默认清单。Finding 前缀 **`N`**。
 
 **不含** LLM 输出约定（见 [llm-output.md](llm-output.md)）。
 

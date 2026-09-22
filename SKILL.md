@@ -1,13 +1,13 @@
 ---
-name: lh
+name: pf
 description: >-
   Product and software workflow for strategy, requirements, architecture,
   testing, structured code walkthroughs, and six-axis review. Use when the
-  user invokes /lh or clearly requests one of those structured workflows;
+  user invokes /pf or clearly requests one of those structured workflows;
   do not use for routine targeted code questions.
 ---
 
-# lhkit
+# ProductForge
 
 一个入口，六条产品与研发工作流。
 
@@ -26,17 +26,17 @@ description: >-
 | `prd` | 让画像、旅程、Story、PRD 和指标可追溯 | [prd.md](reference/prd.md) |
 | `arch` | 记录技术取舍、架构与部署方案 | [arch.md](reference/arch.md) |
 | `test` | 按风险设计测试或补写测试代码 | [test.md](reference/test.md) |
-| `understand` | 按范围与视图生成整体架构、调用顺序、改动或测试结构导览 | [understand.md](reference/understand.md)；架构 / 时序图由 [scripts/understand](scripts/understand/cli.mjs) 从 Walkthrough IR 渲染 |
+| `understand` | 按范围与视图生成整体架构、调用顺序、改动或测试结构导览 | [understand.md](reference/understand.md)；架构 / 时序图由 [scripts/understand](scripts/understand/cli.ts) 从 Walkthrough IR 渲染 |
 | `review` | 按深度评审改动并写入报告；默认 WIP 跑 Design / Clean / Stack，测试变化时追加 Testing | [review.md](reference/review.md) |
 
-调用形式：`/lh <command> <自然语言描述或对象>`。不增加第三级子命令。
+调用形式：`/pf <command> <自然语言描述或对象>`。不增加第三级子命令。
 
 ## 路由
 
 1. 用户点名命令时，直接进入对应参考文档。
 2. 用户未点名但意图明确时，选择最匹配的一条：定位与竞品走 `strategy`；需求与指标走 `prd`；技术方案与部署走 `arch`；测试走 `test`；明确要求结构化代码导览、整体架构 / 时序可视化或改动讲解时走 `understand`；判断改动是否需要修改时走 `review`。
 3. 两条命令都合理且会产生不同结果时，只问一个能决定路线的问题。
-4. 只输入 `/lh` 时，根据仓库现状推荐 2–3 个下一步并说明理由，不自动执行。
+4. 只输入 `/pf` 时，根据仓库现状推荐 2–3 个下一步并说明理由，不自动执行。
 
 `understand` 讲解现有实现；`review` 评判是否应修改。不要混用。
 
@@ -49,7 +49,7 @@ description: >-
 - 战略、需求、架构、ADR、测试设计和 Walkthrough 文档包含 `last_updated`、`status`；有关联 Story 时包含 `related_stories`。
 - 评审报告使用专用报告头；`understand` 默认只在对话中输出，用户要求时才写入文件。
 - 只加载当前任务需要的 `practice/` 实践文档，不把无关技术栈加入上下文。
-- 规则正文是要求，不因工具能检查而删除。确定性检查优先进入各包 lint；`/lh review` 父会话按项目机器检查落点跑命令并复用产出，子 agent 不自行扫描。
+- 规则正文是要求，不因工具能检查而删除。确定性检查优先进入各包 lint；`/pf review` 父会话按项目机器检查落点跑命令并复用产出，子 agent 不自行扫描。
 
 ## 默认路径
 

@@ -3,7 +3,7 @@
   "baseRevision": 1,
   "operations": [
     {
-      "op": "upsertEntity",
+      "op": "upsertParticipant",
       "value": {
         "id": "unit.invoiceNotifier",
         "type": "unit",

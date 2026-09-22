@@ -1,12 +1,13 @@
 {
-  "name": "@lhkit/understand-renderer",
+  "name": "@productforge/understand-renderer",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Walkthrough IR renderer for /lh understand. ELK.js is vendored; do not npm install from the monorepo root.",
+  "description": "Walkthrough IR renderer for /pf understand. ELK.js is vendored; do not npm install from the monorepo root.",
   "scripts": {
-    "check": "node cli.mjs validate --input examples/walkthrough.json",
-    "test": "node --test architectureLayout.test.mjs",
-    "render:example": "node cli.mjs render --input examples/walkthrough.json --output examples/walkthrough.html"
+    "check": "node cli.ts validate --input examples/walkthrough.json",
+    "typecheck": "node ../../../../../node_modules/typescript/lib/tsc.js -p tsconfig.json --noEmit",
+    "test": "node --test calculate/architecture.test.ts model/walkthrough.test.ts",
+    "render:example": "node cli.ts render --input examples/walkthrough.json --output examples/walkthrough.html"
   }
 }

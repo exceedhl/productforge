@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Billing 外部集成主路径</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
   <style>
     :root {
       --bg: oklch(100% 0 0);
@@ -161,7 +159,7 @@
 <body>
   <header class="page-header">
     <h1>Billing 外部集成主路径</h1>
-      <p class="meta">当前视图</p>
+    <p class="meta">当前视图</p>
   </header>
   <article class="guide">
     <section id="scope">
@@ -172,7 +170,7 @@
     
     <section id="architecture">
     <h2>架构结构</h2>
-    <p>主方向从上到下。没有可归属的职责层时不画分层色带。嵌套底框表示包含关系。箭头只表示跨边界耦合。</p>
+    <p>主方向从左到右。没有可对齐的职责层时按参与方关系排列，不画分层色带。嵌套底框表示包含关系。箭头只表示跨边界耦合。</p>
     <div class="legend">
       
       <span class="chip type-actor">Actor</span><span class="chip type-system">System</span><span class="chip type-container">Container</span><span class="chip type-component">Component</span><span class="chip type-module">Module</span><span class="chip type-unit">Unit</span><span class="chip type-contract">Contract</span><span class="chip type-store">Store</span>
@@ -272,7 +270,7 @@
   </svg></div>
       </figure><figure class="figure">
         <figcaption>放大图：展开焦点到 Unit。</figcaption>
-        <div class="canvas"><svg viewBox="0 0 792 1263" width="792" height="1263" role="img">
+        <div class="canvas"><svg viewBox="0 0 1611 692" width="1611" height="692" role="img">
     <defs>
       <marker id="arrow-context" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
         <path d="M 1 1 L 11 6 L 1 11 z" />
@@ -292,127 +290,127 @@
     </defs>
     <g transform="translate(24 24)">
     <g class="box type-container status-context compound">
-      <rect x="96" y="130" width="600" height="840" rx="10" />
+      <rect x="244" y="16" width="950" height="580" rx="10" />
       
-      <text class="type-mark" x="112" y="148">Container</text>
+      <text class="type-mark" x="260" y="34">Container</text>
       
-      <text class="title" x="112" y="166">Backend</text>
-      <text class="identity" x="112" y="184">backend</text>
+      <text class="title" x="260" y="52">Backend</text>
+      <text class="identity" x="260" y="70">backend</text>
       
       
       
     </g>
     <g class="box type-component status-context compound">
-      <rect x="112" y="220" width="568" height="553" rx="10" />
+      <rect x="260" y="106" width="591" height="474" rx="10" />
       
-      <text class="type-mark" x="128" y="238">Component</text>
+      <text class="type-mark" x="276" y="124">Component</text>
       
-      <text class="title" x="128" y="256">Billing</text>
-      <text class="identity" x="128" y="274">billing</text>
-      <text class="responsibility" x="128" y="292">暴露计费注册入口并隐藏内部模块</text>
+      <text class="title" x="276" y="142">Billing</text>
+      <text class="identity" x="276" y="160">billing</text>
+      <text class="responsibility" x="276" y="178">暴露计费注册入口并隐藏内部模块</text>
       
       
     </g>
     <g class="box type-module status-context compound">
-      <rect x="212" y="530" width="232" height="222" rx="10" />
+      <rect x="598" y="232" width="232" height="222" rx="10" />
       
-      <text class="type-mark" x="228" y="548">Module</text>
+      <text class="type-mark" x="614" y="250">Module</text>
       
-      <text class="title" x="228" y="566">写入发票</text>
-      <text class="identity" x="228" y="584">invoiceWriter</text>
+      <text class="title" x="614" y="268">写入发票</text>
+      <text class="identity" x="614" y="286">invoiceWriter</text>
       
       
-      <text class="file-badge" x="432" y="612" text-anchor="end">invoiceWriter.ts</text>
+      <text class="file-badge" x="818" y="314" text-anchor="end">invoiceWriter.ts</text>
     </g>
     <g class="box type-unit status-context leaf">
-      <rect x="228" y="628" width="200" height="108" rx="8" />
+      <rect x="614" y="330" width="200" height="108" rx="8" />
       
-      <text class="type-mark" x="244" y="646">Unit</text>
+      <text class="type-mark" x="630" y="348">Unit</text>
       
-      <text class="title" x="244" y="664">发票工具</text>
-      <text class="identity" x="244" y="682">invoiceTool</text>
+      <text class="title" x="630" y="366">发票工具</text>
+      <text class="identity" x="630" y="384">invoiceTool</text>
       
       
       <g class="contract-port">
-        <rect x="244" y="691" width="8" height="8" rx="2" />
-        <text x="256" y="700">InvoiceToolContract</text>
+        <rect x="630" y="393" width="8" height="8" rx="2" />
+        <text x="642" y="402">InvoiceToolContract</text>
       </g>
-      <text class="file-badge" x="416" y="726" text-anchor="end">invoiceTool.ts</text>
+      <text class="file-badge" x="802" y="428" text-anchor="end">invoiceTool.ts</text>
     </g>
     <g class="box type-module status-context leaf">
-      <rect x="128" y="346" width="200" height="90" rx="8" />
+      <rect x="276" y="285" width="200" height="90" rx="8" />
       
-      <text class="type-mark" x="144" y="364">Module</text>
+      <text class="type-mark" x="292" y="303">Module</text>
       
-      <text class="title" x="144" y="382">注册计费能力</text>
-      <text class="identity" x="144" y="400">registerBilling</text>
+      <text class="title" x="292" y="321">注册计费能力</text>
+      <text class="identity" x="292" y="339">registerBilling</text>
       
       
-      <text class="file-badge" x="316" y="426" text-anchor="end">registerBilling.ts</text>
+      <text class="file-badge" x="464" y="365" text-anchor="end">registerBilling.ts</text>
     </g>
     <g class="box type-module status-context leaf">
-      <rect x="464" y="662" width="200" height="90" rx="8" />
+      <rect x="630" y="474" width="200" height="90" rx="8" />
       
-      <text class="type-mark" x="480" y="680">Module</text>
+      <text class="type-mark" x="646" y="492">Module</text>
       
-      <text class="title" x="480" y="698">支付提供方适配</text>
-      <text class="identity" x="480" y="716">providerApi</text>
+      <text class="title" x="646" y="510">支付提供方适配</text>
+      <text class="identity" x="646" y="528">providerApi</text>
       
       
-      <text class="file-badge" x="652" y="742" text-anchor="end">providerApi.ts</text>
+      <text class="file-badge" x="818" y="554" text-anchor="end">providerApi.ts</text>
     </g>
     <g class="box type-actor status-context leaf">
-      <rect x="12" y="12" width="200" height="82" rx="8" />
+      <rect x="16" y="65" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="28" y="30">Actor</text>
+      <text class="type-mark" x="32" y="83">Actor</text>
       
-      <text class="title" x="28" y="48">财务运营</text>
+      <text class="title" x="32" y="101">财务运营</text>
       
-      <text class="responsibility" x="28" y="66">发起对账并查看发票</text>
+      <text class="responsibility" x="32" y="119">发起对账并查看发票</text>
       
       
     </g>
     <g class="box type-store status-context leaf">
-      <rect x="228" y="872" width="200" height="82" rx="8" />
+      <rect x="978" y="343" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="244" y="890">Store</text>
+      <text class="type-mark" x="994" y="361">Store</text>
       
-      <text class="title" x="244" y="908">发票表</text>
-      <text class="identity" x="244" y="926">invoices</text>
+      <text class="title" x="994" y="379">发票表</text>
+      <text class="identity" x="994" y="397">invoices</text>
       
       
       
     </g>
     <g class="box type-system status-context leaf">
-      <rect x="464" y="1085" width="200" height="82" rx="8" />
+      <rect x="1315" y="478" width="200" height="82" rx="8" />
       
-      <text class="type-mark" x="480" y="1103">System</text>
+      <text class="type-mark" x="1331" y="496">System</text>
       
-      <text class="title" x="480" y="1121">Payment Provider</text>
-      <text class="identity" x="480" y="1139">payment-provider</text>
+      <text class="title" x="1331" y="514">Payment Provider</text>
+      <text class="identity" x="1331" y="532">payment-provider</text>
       
       
       
     </g>
     <g class="edge status-context kind-dependsOn">
-      <path d="M 228 436 L 228 520" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(228 483)">
+      <path d="M 476 330 L 588 330" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(537 330)">
         <rect class="edge-pill" x="-41" y="-40" width="82" height="38" rx="4" />
         <text class="edge-label" text-anchor="middle" y="-18">注册写入入口</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">in-process</text>
       </g>
     </g>
     <g class="edge status-context kind-writes">
-      <path d="M 328 736 L 328 862" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(328 804)">
+      <path d="M 814 384 L 968 384" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(896 384)">
         <rect class="edge-pill" x="-41" y="-40" width="82" height="38" rx="4" />
         <text class="edge-label" text-anchor="middle" y="-18">写入发票定义</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">table</text>
       </g>
     </g>
     <g class="edge status-context kind-calls">
-      <path d="M 564 752 L 564 1075" marker-end="url(#arrow-context)" />
-      <g class="edge-caption" transform="translate(564 918.5)">
+      <path d="M 830 519 L 1305 519" marker-end="url(#arrow-context)" />
+      <g class="edge-caption" transform="translate(1072.5 519)">
         <rect class="edge-pill" x="-30" y="-40" width="60" height="38" rx="4" />
         <text class="edge-label" text-anchor="middle" y="-18">创建收款</text>
         <text class="edge-protocol" text-anchor="middle" y="-4">HTTPS</text>

@@ -21,13 +21,13 @@ export const BOX = {
 };
 
 export function collectContracts(entity, walkthrough) {
-  const nested = walkthrough.entities.filter(
+  const nested = walkthrough.participants.filter(
     (item) => item.type === "contract" && item.parentId === entity.id,
   );
   const implemented = walkthrough.relations
     .filter((relation) => relation.type === "implements" && relation.sourceId === entity.id)
     .map((relation) =>
-      walkthrough.entities.find((item) => item.id === relation.targetId && item.type === "contract"),
+      walkthrough.participants.find((item) => item.id === relation.targetId && item.type === "contract"),
     )
     .filter(Boolean);
   const seen = new Set();
@@ -58,11 +58,39 @@ export function boxSlots(entity, contracts = []) {
   };
 }
 
-export function measureBox(entity, contracts = [], limits = {}) {
+export function boxNodeLabels(entity, contracts = []) {
+  const slots = boxSlots(entity, contracts);
+  const labels = [];
+  const addLine = (role, text, fontSize) => {
+    const raw = String(text ?? "").trim();
+    if (!raw) return;
+    const lines = wrapText(raw, 240, fontSize, role === "title" || role === "responsibility" ? 2 : 1);
+    for (const line of lines) {
+      labels.push({
+        id: `${entity.id}::${role}::${labels.length}`,
+        text: line,
+        width: Math.max(28, estimateTextWidth(line, fontSize) + (role === "contract" ? 18 : 6)),
+        height: 16,
+        layoutOptions: {
+          "elk.nodeLabels.placement": "INSIDE V_TOP H_LEFT",
+        },
+      });
+    }
+  };
+  addLine("type", slots.type, 11);
+  addLine("title", slots.title, 13);
+  addLine("identity", slots.identity, 11);
+  addLine("responsibility", slots.responsibility, 12);
+  for (const name of slots.contracts) addLine("contract", name, 11);
+  addLine("file", slots.file, 10);
+  return labels;
+}
+
+export function measureBox(entity, contracts = [], limits: { minWidth?: number; maxWidth?: number } = {}) {
   const slots = boxSlots(entity, contracts);
   const minWidth = limits.minWidth ?? BOX.minWidth;
   const maxWidth = limits.maxWidth ?? BOX.maxWidth;
-  const texts = [slots.type, slots.layer, slots.title, slots.identity, ...slots.contracts];
+  const texts = [slots.type, slots.title, slots.identity, ...slots.contracts];
   const width = Math.min(
     maxWidth,
     Math.max(minWidth, Math.max(0, ...texts.map((text) => estimateTextWidth(text, 13))) + BOX.padX * 2 + 12),
@@ -75,8 +103,18 @@ export function measureBoxHeader(entity) {
   return measureBox(entity, []).height;
 }
 
-export function measureBoxHeight(slots, width = BOX.minWidth) {
-  return layoutBoxSlots(slots, width).height;
+export function participantContent(node) {
+  const slots = boxSlots(node, node.contracts ?? []);
+  const lines = layoutBoxSlots(slots, node.width);
+  return {
+    typeLabel: slots.type,
+    status: slots.status,
+    titleLines: lines.titleLines,
+    identityLines: lines.identityLines,
+    responsibilityLines: lines.responsibilityLines,
+    contractLines: lines.contractLines,
+    file: slots.file,
+  };
 }
 
 export function layoutBoxSlots(slots, width) {

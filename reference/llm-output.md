@@ -1,7 +1,7 @@
 # LLM 回复用语约定（通用）
 
-适用于 **所有** `/lh` 子命令产出与对话回复。
-**不是** `/lh review` 的 Conventions 轴标准；Conventions 轴只评代码命名、目录、日志、迁移（见 [conventions.md](conventions.md)）。
+适用于 **所有** `/pf` 子命令产出与对话回复。
+**不是** `/pf review` 的 Conventions 轴标准；Conventions 轴只评代码命名、目录、日志、迁移（见 [conventions.md](conventions.md)）。
 
 本文件是唯一维护入口。仓库 `AGENTS.md` 可以要求每个会话首次回复前读取本文件，但不复制正文。
 

@@ -1,10 +1,10 @@
 export function edgesFromElk(elkGraph, relations) {
-  const relationById = new Map(relations.map((relation) => [relation.id, relation]));
+  const relationById = new Map<string, any>(relations.map((relation) => [relation.id, relation]));
   const world = new Map();
   const parentOf = new Map();
   indexElkTree(elkGraph, 0, 0, world, parentOf);
 
-  const edges = [];
+  const edges: any[] = [];
   collectListedEdges(elkGraph, (edge, listedOn) => {
     const relation = relationById.get(edge.id);
     if (!relation) return;
@@ -18,7 +18,7 @@ export function edgesFromElk(elkGraph, relations) {
         ),
       ) ??
       { x: 0, y: 0 };
-    const points = [];
+    const points: { x: number; y: number }[] = [];
     for (const section of edge.sections ?? []) {
       const origin = sectionOrigin(section, world, parentOf, fallbackOrigin);
       addPoint(points, origin, section.startPoint);
@@ -27,30 +27,20 @@ export function edgesFromElk(elkGraph, relations) {
     }
     const cleaned = simplifyOrthogonal(points);
     if (cleaned.length >= 2) {
+      const elkLabel = (edge.labels ?? []).find((label) => Number.isFinite(label.x) && Number.isFinite(label.y));
       edges.push({
         ...relation,
         points: cleaned,
+        labelPoint: elkLabel
+          ? {
+              x: fallbackOrigin.x + elkLabel.x + elkLabel.width / 2,
+              y: fallbackOrigin.y + elkLabel.y + elkLabel.height + 2,
+            }
+          : undefined,
       });
     }
   });
   return edges;
-}
-
-export function labelAnchor(points) {
-  let best = { x: points[0]?.x ?? 0, y: (points[0]?.y ?? 0) - 4 };
-  let bestLength = 0;
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const first = points[index];
-    const second = points[index + 1];
-    const horizontal = Math.abs(first.y - second.y) < 1;
-    const length = Math.abs(first.x - second.x) + Math.abs(first.y - second.y);
-    const score = length + (horizontal ? 32 : 0);
-    if (score >= bestLength) {
-      bestLength = score;
-      best = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 - 6 };
-    }
-  }
-  return best;
 }
 
 function sectionOrigin(section, world, parentOf, fallback) {
@@ -111,7 +101,7 @@ function addPoint(points, origin, point) {
 }
 
 function simplifyOrthogonal(points) {
-  const collapsed = [];
+  const collapsed: { x: number; y: number }[] = [];
   for (const point of points) {
     const last = collapsed.at(-1);
     if (last && Math.abs(last.x - point.x) < 1 && Math.abs(last.y - point.y) < 1) continue;
