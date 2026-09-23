@@ -3,11 +3,18 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Walkthrough IR renderer for /pf understand. ELK.js is vendored; do not npm install from the monorepo root.",
+  "description": "Walkthrough IR renderer and Tree-sitter index for /pf understand. Architecture placement uses Graphviz WASM; edges use libavoid. Install dependencies in this directory; do not add them to the monorepo root.",
   "scripts": {
     "check": "node cli.ts validate --input examples/walkthrough.json",
     "typecheck": "node ../../../../../node_modules/typescript/lib/tsc.js -p tsconfig.json --noEmit",
-    "test": "node --test calculate/architecture.test.ts model/walkthrough.test.ts",
+    "test": "node --test calculate/architecture.test.ts model/walkthrough.test.ts model/knowledge.test.ts index/buildCodeIndex.test.ts",
     "render:example": "node cli.ts render --input examples/walkthrough.json --output examples/walkthrough.html"
+  },
+  "dependencies": {
+    "@hpcc-js/wasm": "2.35.2",
+    "libavoid-js": "0.5.0-beta.5",
+    "tree-sitter-javascript": "0.25.0",
+    "tree-sitter-typescript": "0.23.2",
+    "web-tree-sitter": "0.27.0"
   }
 }

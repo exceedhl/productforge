@@ -3,6 +3,9 @@ import { dirname, join } from "node:path";
 import { emptyWalkthrough, type Walkthrough } from "./walkthrough.ts";
 
 export const DEFAULT_STORE_RELATIVE_PATH = join(".productforge", "understand", "graph.json");
+export const DEFAULT_KNOWLEDGE_RELATIVE_PATH = join(".productforge", "understand", "knowledge.json");
+export const DEFAULT_INDEX_RELATIVE_PATH = join(".productforge", "understand", "index");
+export const DEFAULT_VIEW_RELATIVE_DIR = join(".productforge", "understand", "views");
 
 export async function readWalkthrough(storePath: string): Promise<Walkthrough> {
   try {
@@ -15,6 +18,10 @@ export async function readWalkthrough(storePath: string): Promise<Walkthrough> {
 }
 
 export async function writeWalkthrough(storePath: string, walkthrough: Walkthrough) {
+  return writeJsonDocument(storePath, walkthrough);
+}
+
+export async function writeJsonDocument(storePath: string, value: unknown) {
   await mkdir(dirname(storePath), { recursive: true });
   try {
     await copyFile(storePath, previousPath(storePath));
@@ -22,7 +29,7 @@ export async function writeWalkthrough(storePath: string, walkthrough: Walkthrou
     if (!isMissingFile(error)) throw error;
   }
   const tempPath = `${storePath}.${process.pid}.tmp`;
-  await writeFile(tempPath, `${JSON.stringify(walkthrough, null, 2)}\n`, "utf8");
+  await writeFile(tempPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await rename(tempPath, storePath);
   return storePath;
 }

@@ -26,7 +26,7 @@ description: >-
 | `prd` | 让画像、旅程、Story、PRD 和指标可追溯 | [prd.md](reference/prd.md) |
 | `arch` | 记录技术取舍、架构与部署方案 | [arch.md](reference/arch.md) |
 | `test` | 按风险设计测试或补写测试代码 | [test.md](reference/test.md) |
-| `understand` | 按范围与视图生成整体架构、调用顺序、改动或测试结构导览 | [understand.md](reference/understand.md)；架构 / 时序图由 [scripts/understand](scripts/understand/cli.ts) 从 Walkthrough IR 渲染 |
+| `understand` | 按范围与视图生成整体架构、调用顺序、改动或测试结构导览 | [understand.md](reference/understand.md)；符号和调用先由 [scripts/understand](scripts/understand/cli.ts) 做 Tree-sitter 索引，架构 / 时序图再从 Walkthrough IR 渲染 |
 | `review` | 按深度评审改动并写入报告；默认 WIP 跑 Design / Clean / Stack，测试变化时追加 Testing | [review.md](reference/review.md) |
 
 调用形式：`/pf <command> <自然语言描述或对象>`。不增加第三级子命令。

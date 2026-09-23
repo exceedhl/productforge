@@ -37,6 +37,22 @@
 
 文档与代码不一致时分别说明二者内容，不根据一方内容推断另一方未写明的事实。排除与所选范围无关的生成文件、历史报告和本工作流文件的改动，除非用户点名。
 
+先运行确定性索引，再让模型只阅读 Evidence Packet。模型不枚举文件、不猜测可静态解析的调用，也不编造行号。
+
+```text
+node .agents/skills/productforge/scripts/understand/cli.ts index --root <目录>
+node .agents/skills/productforge/scripts/understand/cli.ts packet --index .productforge/understand/index --file <相对路径> --symbol <符号>
+```
+
+索引可删除后重建。后续只重新解析内容哈希变化的文件。默认预算是 40 个文件、80 个符号、调用深度 4、2 个场景、4 张导览页；达到预算就交付当前结果，并列出尚未确认的内容。
+
+范围有两种，最终写入同一份 Knowledge：
+
+- **场景切片**：用户给出体验或功能目标。从触发追到用户可观察结果、状态写入或外部请求。
+- **区域概览**：用户给出目录、符号或 Component。说明职责、公共入口、跨边界依赖、主要状态和 2–4 个代表性场景。
+
+简单调用链、算法、职责和未确认项用文字或 HTML。架构图、时序图只在参与方、异步或分支已经复杂时使用。状态模型默认写成结构化文字；只有分叉多到文字需要读两遍时，才另做状态图。当前渲染器还没有状态图布局。
+
 ## 3. 面向未读过代码的人
 
 内部术语第一次出现时先说明职责，再给标识符。先解释用户行为，再解释文件和调用关系。
@@ -151,11 +167,12 @@ Interface、trait 和 protocol 统一称为 **Contract**。它是 Unit、Module 
 
 以 Unit 为主时：节点按**代码里真实存在、且叶子节点写明了的**职责层排列。层名沿用仓库自己的叫法，例如 `编排`、`判定`、`落盘`。`Presentation → 接口 / 编排 → 领域 / 应用 → 持久化 / 网关 → Store` 只是常见栈的例子，不是默认模板，不能按 Controller / Model 硬套。Actor 和 Store 不会因为类型自动变成一层。
 
-- 整张图用通栏横向 Lane 作坐标系，不要只在焦点小框里分层。一侧写完整层名，同层节点沿另一轴排列；相邻 Lane 用分割线分开。背景色只作辅助识别，图例写出层名。
+- 不要求层从上到下排。包含和职责层是两种分组。同一个父框里、又属于同一层的框是这两组的交集，这些框排成一块。不同父框里的同一层不必锁到同一横排。通栏色带只在各层叶子已经分成互不重叠的横带时才涂。对不齐时，改为在每个父框里给这一层的一组叶子涂背景，不拉通整张图。背景色只作辅助识别，层名写在色块上。
 - 焦点拆成 Unit；邻居仍是大块，但只有它自己写了层名时才落进对应层。
 - 焦点里每个 Unit 叶子都写了自己的层名，并且至少有两个不同层名，才画职责 Lane。否则按参与方关系从左到右排列，不画分层色带。
-- 层的上下顺序跟参与方里层名第一次出现的顺序一致。没有叶子的层、对不上任何 Unit 的层，不画。色带不能在垂直方向重叠，没有层名的框也不能落在色带里；做不到时这张图不画色带。
-- 色带是跨整图的坐标系，但不改变包含关系：同一层的 Unit 横向对齐，同时留在自己的父框里。嵌套框可以竖跨多条色带，因为它包着不同层的子节点。
+- 层名仍按参与方里第一次出现的顺序记录，但这个顺序不拿来把层排成上下行。没有叶子的层、对不上任何 Unit 的层，不画。通栏色带不能在垂直方向重叠，没有层名的框也不能落在通栏里；做不到时不画通栏，改画父框内的分组背景。同一父框里两块背景叠在一起，或一块背景盖住别的层的叶子，就不涂那一块。
+- 嵌套框包住自己的子节点。它不必为了别的父框里的层而被拉高。
+- 放大图的框不排成一条横排。同一个父框里、同一层的叶子先收成一块；这些块和嵌套父框再按接近方正的方式折行，避免画面过宽。整图仍用 Graphviz `dot` 从左到右排。排完后如果大框互相压住，把后一个连同它的子框推开，再让父框重新包住子框。连线用 libavoid 绕开叶子框，画成直角折线。连接点钉在边框上。仍贴在一起的横竖线段再挪开。块与块之间留出走线的空隙，线不穿过叶子框。色带是按各层叶子上下界涂的矩形；两个引擎都不上色，也不使用 `dot` 的正交折线。
 - 叶子没有层名时不要从父 Container / Component 继承层，以免整张图被一个父层名涂满。父框自己写了 `layer` 也只在它作为折叠单框出现时生效；已经展开的框不进色带。
 - 用户明确要求并排主方向时才改用从左到右的 Column。
 - 真实的主要关系尽量沿主方向。反向依赖必须显式画出；事件和异步通知可用反向虚线。不存在的边不要为了方向整齐而补上。
@@ -292,6 +309,27 @@ Billing 是 Architectural Component：它通过注册入口暴露完整计费能
 - **对话**：适合简单的指定区域、单条调用链和短 diff 说明，默认使用。对话只写摘要、伪代码和文件位置，不贴架构图或时序图的 HTML。
 - **HTML**：适合用户明确要求 HTML、整体仓库范围、架构 / 时序变化图，或完整导览包含多个入口、调用路径、状态和文件关系。由本地渲染器从 Walkthrough IR 生成，不由模型直接写出。
 
+存储分成三层，不要把语法节点、讲解和坐标写进同一个文件：
+
+| 层 | 写入路径 | 谁生成 | 能否删除后重建 |
+|---|---|---|---|
+| 代码索引 | `.productforge/understand/index/` | Tree-sitter | 能 |
+| Knowledge | `.productforge/understand/knowledge.json` | 模型补职责、场景、算法、状态和判断；结构由校验器约束 | 不能，哈希变化后只重算受影响证据 |
+| View | `.productforge/understand/views/<id>.json` | 模型选择本次导览页和预算 | 能按范围重建 |
+| `graph.json` 与 HTML | `.productforge/understand/` | 程序从 Knowledge 投影并渲染 | 能 |
+
+模型负责选择、命名和解释。模型不写文件清单、行号、可静态解析的调用，也不写 SVG。`confirmed` 或 `corroborated` 的判断和算法必须引用 `evidence`。推断写 `inferred`，无法确认写 `unknown`。
+
+Knowledge 使用 schema 2。除原有 `participants`、`relations`、`scenarios` 外，还有 `scopes`、`capabilities`、`algorithms`、`stateModels`、`claims`、`evidence`。`scopes.kind` 为 `scenario` 或 `area`。后续修改只提交 patch，不整份重写。
+
+```text
+node .agents/skills/productforge/scripts/understand/cli.ts save --input <knowledge.json>
+node .agents/skills/productforge/scripts/understand/cli.ts apply --patch <knowledge-patch.json>
+node .agents/skills/productforge/scripts/understand/cli.ts render --input <knowledge.json> --view <view.json> --open
+```
+
+`graph.json` 仍是渲染投影。直接渲染 Knowledge 时，程序会把算法伪代码和状态模型投影成文字；只有 `participants` / `scenarios` 足够复杂时才画架构图和时序图。
+
 ### Walkthrough IR
 
 需要架构图或时序图时，模型只输出可校验的 JSON，不输出 HTML。HTML 是完整导览文档：章节按第 4 节组织，只有架构图和时序图用 SVG 嵌入。POC 实现放在 skill 目录，不写入产品包：
@@ -310,7 +348,7 @@ IR 分为三部分：
 
 `guide` 只放导览页的章节文案。架构图的内容来自 `participants` 和 `relations`，时序图的内容来自 `scenarios`。
 
-首轮把完整 snapshot 写入 `.productforge/understand/graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。`removeParticipant` 在该参与方仍有子参与方时拒绝，要先删除或改挂子参与方。
+首轮把渲染用的 Walkthrough 写入 `.productforge/understand/graph.json`。语义事实写入 `.productforge/understand/knowledge.json`，不要把职责、算法和判断只留在 `graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。`removeParticipant` 在该参与方仍有子参与方时拒绝，要先删除或改挂子参与方。
 
 ```text
 node .agents/skills/productforge/scripts/understand/cli.ts save --input <snapshot.json>
@@ -375,8 +413,9 @@ docs/design/[ID]_Walkthrough.md
 
 ## 完成条件
 
-- 范围与视图明确；变化视图记录了基线和当前端，整体仓库视图给出了全局架构而不是文件清单。
+- 范围与视图明确；变化视图记录了基线和当前端，整体仓库视图给出了全局架构而不是文件清单。场景切片或区域概览都落到同一份 Knowledge。
 - 用户可以说清功能从哪个入口开始，最终读取或写入什么。
+- 符号、调用和行号来自确定性索引或 Evidence Packet。模型补上的职责、算法和判断带有证据或明确标成推断 / 未知。
 - 范围内的判定、生成、校验、编译或变换已用短伪代码写出，没有只靠段落、架构图或时序图代替。
 - 关键参与方的归属和跨边界耦合清楚，内部名称第一次出现时有职责说明。架构图箭头没有画成调用链或算法。
 - 架构图、时序图和测试展示使用一致的当前 / 变化语义；变化元素与必要上下文可以区分。

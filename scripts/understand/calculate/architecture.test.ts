@@ -240,7 +240,7 @@ test("不同层的 Unit 仍留在父框内", async () => {
   }
 });
 
-test("不同父框里的同一层对齐后仍画出职责层", async () => {
+test("不同父框里的同一层各自成组，不排成通栏", async () => {
   const layout = await calculateArchitecture(
     {
       ...walkthrough(
@@ -257,14 +257,10 @@ test("不同父框里的同一层对齐后仍画出职责层", async () => {
     },
     { view: "detail" },
   );
-  const lanes = layout.lanes ?? [];
-  assert.deepEqual(lanes.map((lane) => lane.title), ["入口", "落盘"]);
-  const entryA = layout.nodes.find((node) => node.id === "a");
-  const entryB = layout.nodes.find((node) => node.id === "b");
-  assert.ok(Math.abs(entryA.y - entryB.y) < 1);
+  const node = (id) => layout.nodes.find((item) => item.id === id);
   for (const [childId, parentId] of [["a", "left"], ["b", "right"], ["c", "right"]]) {
-    const child = layout.nodes.find((node) => node.id === childId);
-    const parent = layout.nodes.find((node) => node.id === parentId);
+    const child = node(childId);
+    const parent = node(parentId);
     assert.ok(child.x >= parent.x - 1);
     assert.ok(child.x + child.width <= parent.x + parent.width + 1);
     assert.ok(child.y >= parent.y - 1);
@@ -305,7 +301,6 @@ test("同一层分属不同父框时，父框不会叠在一起", async () => {
   ]) {
     assert.equal(overlaps(node(leftId), node(rightId)), false, `${leftId} 与 ${rightId} 的框不应重叠`);
   }
-  assert.ok(Math.abs(node("start").y - node("handle").y) < 1);
   for (const id of ["start", "handle", "repo"]) {
     const leaf = node(id);
     assert.equal(leaf.height, measureBox(leaf, leaf.contracts ?? []).height);
@@ -343,20 +338,37 @@ test("进入同一个框的线条从不同点接入，并且不穿过别的框",
   const edge = (id) => layout.edges.find((item) => item.id === id);
   const endA = edge("r1").points.at(-1);
   const endB = edge("r2").points.at(-1);
-  assert.ok(Math.abs(endA.x - endB.x) > 8);
-  const horizontals = (points) => {
-    const ys = [];
+  assert.ok(Math.abs(endA.x - endB.x) > 8 || Math.abs(endA.y - endB.y) > 8);
+  const spans = (points) => {
+    const rows = [];
     for (let index = 0; index < points.length - 1; index += 1) {
-      if (Math.abs(points[index].y - points[index + 1].y) < 1 && Math.abs(points[index].x - points[index + 1].x) > 8) {
-        ys.push(points[index].y);
-      }
+      if (Math.abs(points[index].y - points[index + 1].y) >= 1 || Math.abs(points[index].x - points[index + 1].x) <= 8) continue;
+      rows.push({ y: points[index].y, x0: Math.min(points[index].x, points[index + 1].x), x1: Math.max(points[index].x, points[index + 1].x) });
     }
-    return ys;
+    return rows;
   };
-  const y1 = horizontals(edge("r1").points);
-  const y2 = horizontals(edge("r2").points);
-  assert.ok(y1.length > 0 && y2.length > 0);
-  assert.ok(Math.abs(y1[0] - y2[0]) > 20);
+  for (const left of spans(edge("r1").points)) {
+    for (const right of spans(edge("r2").points)) {
+      const overlap = Math.min(left.x1, right.x1) - Math.max(left.x0, right.x0);
+      if (overlap < 40) continue;
+      assert.ok(Math.abs(left.y - right.y) > 20);
+    }
+  }
+  const columns = (points) => {
+    const cols = [];
+    for (let index = 0; index < points.length - 1; index += 1) {
+      if (Math.abs(points[index].x - points[index + 1].x) >= 1 || Math.abs(points[index].y - points[index + 1].y) <= 8) continue;
+      cols.push({ x: points[index].x, y0: Math.min(points[index].y, points[index + 1].y), y1: Math.max(points[index].y, points[index + 1].y) });
+    }
+    return cols;
+  };
+  for (const left of columns(edge("r1").points)) {
+    for (const right of columns(edge("r2").points)) {
+      const overlap = Math.min(left.y1, right.y1) - Math.max(left.y0, right.y0);
+      if (overlap < 40) continue;
+      assert.ok(Math.abs(left.x - right.x) > 20);
+    }
+  }
   const boxes = layout.nodes.filter((node) => !node.isCompound);
   for (const item of [edge("r1"), edge("r2")]) {
     for (let index = 0; index < item.points.length - 1; index += 1) {
@@ -364,13 +376,7 @@ test("进入同一个框的线条从不同点接入，并且不穿过别的框",
       const to = item.points[index + 1];
       for (const box of boxes) {
         if (box.id === item.sourceId || box.id === item.targetId) continue;
-        const minX = Math.min(from.x, to.x);
-        const maxX = Math.max(from.x, to.x);
-        const minY = Math.min(from.y, to.y);
-        const maxY = Math.max(from.y, to.y);
-        const crosses =
-          maxX > box.x + 1 && minX < box.x + box.width - 1 && maxY > box.y + 1 && minY < box.y + box.height - 1;
-        assert.equal(crosses, false, `${item.id} 不应穿过 ${box.id}`);
+        assert.equal(segmentHitsBox(from, to, box), false, `${item.id} 不应穿过 ${box.id}`);
       }
     }
     const source = boxes.find((box) => box.id === item.sourceId);
@@ -379,12 +385,10 @@ test("进入同一个框的线条从不同点接入，并且不穿过别的框",
     const last = [item.points.at(-2), item.points.at(-1)];
     assert.equal(segmentLiesOnBorder(first[0], first[1], source), false, `${item.id} 出发段贴着边框`);
     assert.equal(segmentLiesOnBorder(last[0], last[1], target), false, `${item.id} 进入段贴着边框`);
-    assert.ok(axisAligned(first[0], first[1]), `${item.id} 出发段应保持直角`);
-    assert.ok(axisAligned(last[0], last[1]), `${item.id} 进入段应保持直角`);
     assert.ok(pointOnBorder(last[1], target), `${item.id} 终点应落在边框上`);
     for (let index = 0; index < item.points.length - 1; index += 1) {
       assert.equal(
-        crossesInterior(item.points[index], item.points[index + 1], target),
+        segmentHitsBox(item.points[index], item.points[index + 1], target),
         false,
         `${item.id} 不应穿过目标框`,
       );
@@ -405,18 +409,13 @@ test("横跨中间框的连线不穿过中间框，进框前留出直线", async
     { view: "detail" },
   );
   const edge = layout.edges.find((item) => item.id === "r");
+  assertOrthogonal(edge.points);
   const middle = layout.nodes.find((node) => node.id === "b");
   const target = layout.nodes.find((node) => node.id === "c");
   for (let index = 0; index < edge.points.length - 1; index += 1) {
     const from = edge.points[index];
     const to = edge.points[index + 1];
-    const minX = Math.min(from.x, to.x);
-    const maxX = Math.max(from.x, to.x);
-    const minY = Math.min(from.y, to.y);
-    const maxY = Math.max(from.y, to.y);
-    const crosses =
-      maxX > middle.x + 1 && minX < middle.x + middle.width - 1 && maxY > middle.y + 1 && minY < middle.y + middle.height - 1;
-    assert.equal(crosses, false);
+    assert.equal(segmentHitsBox(from, to, middle), false);
   }
   const bend = edge.points.at(-2);
   const end = edge.points.at(-1);
@@ -441,12 +440,77 @@ test("同一层相邻框的连线走两者之间，不绕到框下方", async ()
     { view: "detail" },
   );
   const edge = layout.edges.find((item) => item.id === "r");
+  assertOrthogonal(edge.points);
   const boxes = layout.nodes.filter((node) => node.id === "a" || node.id === "b");
   const low = Math.max(...boxes.map((box) => box.y + box.height));
   for (const point of edge.points) assert.ok(point.y <= low + 4);
   const [from, to] = edge.points;
-  assert.ok(axisAligned(from, to));
   assert.equal(segmentLiesOnBorder(from, to, boxes.find((box) => box.id === "a")), false);
+});
+
+test("同一父框里的同一层排成一块", async () => {
+  const layout = await calculateArchitecture(
+    walkthrough(
+      [
+        { id: "parent", type: "component", title: "定义", responsibility: "保存角色卡" },
+        { id: "a", type: "unit", title: "入口甲", parentId: "parent", layer: "入口" },
+        { id: "b", type: "unit", title: "入口乙", parentId: "parent", layer: "入口" },
+        { id: "c", type: "unit", title: "落盘", parentId: "parent", layer: "落盘" },
+      ],
+      [{ id: "rel", type: "calls", sourceId: "a", targetId: "c", label: "写入" }],
+    ),
+    { view: "detail" },
+  );
+  const node = (id) => layout.nodes.find((item) => item.id === id);
+  assert.ok(Math.abs(node("a").y - node("b").y) < 2);
+  const left = node("a").x <= node("b").x ? node("a") : node("b");
+  const right = left === node("a") ? node("b") : node("a");
+  const gap = right.x - (left.x + left.width);
+  assert.ok(gap > 24 && gap < 200);
+  const parent = node("parent");
+  for (const id of ["a", "b", "c"]) {
+    const child = node(id);
+    assert.ok(child.x >= parent.x - 1);
+    assert.ok(child.x + child.width <= parent.x + parent.width + 1);
+    assert.ok(child.y >= parent.y + (parent.headerHeight ?? 0) - 1);
+  }
+});
+
+test("各层对不齐时，每个父框里仍涂出这一层的背景", async () => {
+  const layout = await calculateArchitecture(
+    walkthrough(
+      [
+        { id: "left", type: "component", title: "左", responsibility: "只负责落盘" },
+        { id: "right", type: "component", title: "右", responsibility: "先接入口再落盘" },
+        { id: "b", type: "unit", title: "右入口", parentId: "right", layer: "入口" },
+        { id: "c", type: "unit", title: "右落盘", parentId: "right", layer: "落盘" },
+        { id: "a", type: "unit", title: "左落盘", parentId: "left", layer: "落盘" },
+      ],
+      [{ id: "rel", type: "calls", sourceId: "b", targetId: "a", label: "写入" }],
+    ),
+    { view: "detail" },
+  );
+  const lanes = layout.lanes ?? [];
+  assert.ok(lanes.length >= 2);
+  for (const id of ["a", "b", "c"]) {
+    const node = layout.nodes.find((item) => item.id === id);
+    const lane = lanes.find(
+      (item) =>
+        item.title === node.layer &&
+        node.x >= item.x - 1 &&
+        node.x + node.width <= item.x + item.width + 1 &&
+        node.y >= item.y - 1 &&
+        node.y + node.height <= item.y + item.height + 1,
+    );
+    assert.ok(lane, `${id} 应落在自己的层背景里`);
+    assert.ok(lane.width < layout.width - 8, "对不齐时背景不拉通整张图");
+  }
+  const overlaps = (left, right) =>
+    left.x < right.x + right.width - 1 &&
+    left.x + left.width > right.x + 1 &&
+    left.y < right.y + right.height - 1 &&
+    left.y + left.height > right.y + 1;
+  assert.equal(overlaps(layout.nodes.find((item) => item.id === "left"), layout.nodes.find((item) => item.id === "right")), false);
 });
 
 test("职责层背景铺到下一层", async () => {
@@ -462,21 +526,41 @@ test("职责层背景铺到下一层", async () => {
   );
   const lanes = layout.lanes ?? [];
   assert.ok(lanes.length >= 2);
-  for (let index = 0; index < lanes.length - 1; index += 1) {
-    assert.ok(Math.abs(lanes[index].y + lanes[index].height - lanes[index + 1].y) < 1);
-  }
-  const last = lanes.at(-1);
-  assert.ok(last.y + last.height >= layout.height - 1);
   for (const node of layout.nodes) {
     if (node.isCompound || !node.layer) continue;
-    const lane = lanes.find((item) => item.title === node.layer);
-    assert.ok(node.y >= lane.y - 1);
-    assert.ok(node.y + node.height <= lane.y + lane.height + 1);
+    const lane = lanes.find((item) => item.title === node.layer && boxInside(node, laneRect(item, layout)));
+    assert.ok(lane, `${node.id} 应落在 ${node.layer} 的背景里`);
+  }
+  for (let i = 0; i < lanes.length; i += 1) {
+    for (let j = i + 1; j < lanes.length; j += 1) {
+      assert.equal(rectsOverlap(laneRect(lanes[i], layout), laneRect(lanes[j], layout)), false);
+    }
   }
 });
 
-function axisAligned(from, to) {
-  return Math.abs(from.x - to.x) < 1 || Math.abs(from.y - to.y) < 1;
+function laneRect(lane, layout) {
+  return { x: lane.x ?? 0, y: lane.y, width: lane.width ?? layout.width, height: lane.height };
+}
+
+function boxInside(node, rect) {
+  return node.x >= rect.x - 1 && node.x + node.width <= rect.x + rect.width + 1 && node.y >= rect.y - 1 && node.y + node.height <= rect.y + rect.height + 1;
+}
+
+function rectsOverlap(left, right) {
+  return (
+    left.x < right.x + right.width - 1 &&
+    left.x + left.width > right.x + 1 &&
+    left.y < right.y + right.height - 1 &&
+    left.y + left.height > right.y + 1
+  );
+}
+
+function assertOrthogonal(points) {
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const point = points[index];
+    assert.ok(Math.abs(point.x - previous.x) < 1 || Math.abs(point.y - previous.y) < 1);
+  }
 }
 
 function pointOnBorder(point, box) {
@@ -487,12 +571,36 @@ function pointOnBorder(point, box) {
   return (onX && insideY) || (onY && insideX);
 }
 
-function crossesInterior(from, to, box) {
-  const minX = Math.min(from.x, to.x);
-  const maxX = Math.max(from.x, to.x);
-  const minY = Math.min(from.y, to.y);
-  const maxY = Math.max(from.y, to.y);
-  return maxX > box.x + 1 && minX < box.x + box.width - 1 && maxY > box.y + 1 && minY < box.y + box.height - 1;
+function segmentHitsBox(from, to, box) {
+  const left = box.x + 1;
+  const right = box.x + box.width - 1;
+  const top = box.y + 1;
+  const bottom = box.y + box.height - 1;
+  let start = 0;
+  let end = 1;
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const clips = [
+    [-dx, from.x - left],
+    [dx, right - from.x],
+    [-dy, from.y - top],
+    [dy, bottom - from.y],
+  ];
+  for (const [direction, distance] of clips) {
+    if (Math.abs(direction) < 1e-9) {
+      if (distance < 0) return false;
+      continue;
+    }
+    const at = distance / direction;
+    if (direction < 0) {
+      if (at > end) return false;
+      if (at > start) start = at;
+    } else {
+      if (at < start) return false;
+      if (at < end) end = at;
+    }
+  }
+  return start < end;
 }
 
 function segmentLiesOnBorder(from, to, box) {
@@ -530,8 +638,11 @@ test("层在 Y 向上叠在一起时丢掉全部色带", async () => {
     for (let j = i + 1; j < lanes.length; j += 1) {
       const left = lanes[i];
       const right = lanes[j];
-      const overlap = left.y < right.y + right.height && right.y < left.y + left.height;
-      assert.equal(overlap, false, `${left.title} 与 ${right.title} 不应重叠`);
+      assert.equal(
+        rectsOverlap(laneRect(left, layout), laneRect(right, layout)),
+        false,
+        `${left.title} 与 ${right.title} 不应重叠`,
+      );
     }
     assert.ok(leftTitle(lanes[i]), "每条 Lane 必须有完整层名");
   }

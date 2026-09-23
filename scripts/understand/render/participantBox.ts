@@ -133,6 +133,7 @@ export function wrapSvg(width, height, content) {
       <button type="button" data-canvas-zoom="in">放大</button>
       <button type="button" data-canvas-zoom="out">缩小</button>
       <button type="button" data-canvas-zoom="fit">适应</button>
+      <button type="button" data-canvas-zoom="fill">充满</button>
     </div>
     <svg viewBox="0 0 ${paddedWidth} ${paddedHeight}" width="${paddedWidth}" height="${paddedHeight}" role="img">
     <defs>

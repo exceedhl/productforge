@@ -14,6 +14,8 @@ export function renderGuidePage(input: {
   guide?: Guide;
   architectures: DiagramFigure[];
   sequences: DiagramFigure[];
+  slides?: { kind: string; title: string }[];
+  unresolved?: string[];
 }) {
   const pageTitle = input.title ?? "代码导览";
   const guide = input.guide;
@@ -31,6 +33,7 @@ export function renderGuidePage(input: {
     <p class="meta">${escapeHtml(formatGuideMeta(guide))}</p>
   </header>
   <article class="guide">
+    ${renderSlides(input.slides, input.unresolved)}
     ${renderScopeSection(guide)}
     ${renderProseSection("简要结论", guide?.conclusion)}
     ${renderArchitectureSection(input.architectures, guide)}
@@ -45,6 +48,34 @@ export function renderGuidePage(input: {
 </body>
 </html>
 `;
+}
+
+function renderSlides(slides, unresolved: string[] | undefined) {
+  if (!slides?.length && !unresolved?.length) return "";
+  const items = (slides ?? [])
+    .map((slide) => `<li>${escapeHtml(slideLabel(slide.kind))}：${escapeHtml(slide.title)}</li>`)
+    .join("");
+  const pending = (unresolved ?? [])
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+  return `<section id="slides">
+    <h2>导览页</h2>
+    ${items ? `<ol>${items}</ol>` : ""}
+    ${pending ? `<h3>未确认</h3><ul>${pending}</ul>` : ""}
+  </section>`;
+}
+
+function slideLabel(kind: string) {
+  const labels = {
+    summary: "摘要",
+    architecture: "架构",
+    sequence: "时序",
+    state: "状态",
+    algorithm: "算法",
+    reading: "阅读入口",
+    unknowns: "未确认",
+  };
+  return labels[kind] ?? kind;
 }
 
 function renderScopeSection(guide) {
@@ -203,6 +234,17 @@ function layerLegendChips(views: DiagramFigure[]) {
 
 function canvasScript() {
   return `
+    let hoveredCanvas = null;
+    document.addEventListener("keydown", (event) => {
+      if (!event.metaKey || event.ctrlKey || event.altKey) return;
+      const zoomIn = event.key === "+" || event.key === "=";
+      const zoomOut = event.key === "-" || event.key === "_";
+      if (!zoomIn && !zoomOut) return;
+      const canvas = document.querySelector("[data-canvas].is-filled") || hoveredCanvas || document.querySelector("[data-canvas]");
+      if (!canvas || typeof canvas.zoomBy !== "function") return;
+      event.preventDefault();
+      canvas.zoomBy(zoomIn ? 1.2 : 1 / 1.2);
+    }, true);
     for (const canvas of document.querySelectorAll("[data-canvas]")) {
       const svg = canvas.querySelector("svg");
       const tools = canvas.querySelector(".canvas-tools");
@@ -223,47 +265,77 @@ function canvasScript() {
         const rect = canvas.getBoundingClientRect();
         const width = svg.viewBox.baseVal.width || svg.width.baseVal.value || rect.width;
         const height = svg.viewBox.baseVal.height || svg.height.baseVal.value || rect.height;
-        const scale = Math.min(rect.width / width, rect.height / height, 1);
+        const contain = Math.min(rect.width / width, rect.height / height);
+        const scale = canvas.classList.contains("is-filled") ? contain : Math.min(contain, 1);
         state.scale = scale > 0 ? scale : 1;
         state.x = Math.max(12, (rect.width - width * state.scale) / 2);
         state.y = Math.max(12, (rect.height - height * state.scale) / 2);
         apply();
       };
+      const setFilled = (filled) => {
+        if (filled) {
+          for (const other of document.querySelectorAll("[data-canvas].is-filled")) {
+            if (other !== canvas) other.classList.remove("is-filled");
+          }
+        }
+        canvas.classList.toggle("is-filled", filled);
+        document.body.classList.toggle("canvas-filled", Boolean(document.querySelector("[data-canvas].is-filled")));
+        const fillButton = tools?.querySelector("[data-canvas-zoom='fill']");
+        if (fillButton) fillButton.textContent = filled ? "还原" : "充满";
+        requestAnimationFrame(fit);
+      };
+      canvas.zoomBy = (factor) => {
+        const rect = canvas.getBoundingClientRect();
+        zoomAt(state.scale * factor, rect.width / 2, rect.height / 2);
+      };
+      canvas.addEventListener("pointerenter", () => {
+        hoveredCanvas = canvas;
+      });
       canvas.addEventListener("wheel", (event) => {
         event.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const factor = event.deltaY < 0 ? 1.12 : 0.89;
-        zoomAt(state.scale * factor, event.clientX - rect.left, event.clientY - rect.top);
+        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? canvas.clientHeight : 1;
+        state.x -= event.deltaX * unit;
+        state.y -= event.deltaY * unit;
+        apply();
       }, { passive: false });
       let drag = null;
       canvas.addEventListener("selectstart", (event) => event.preventDefault());
       canvas.addEventListener("pointerdown", (event) => {
         if (event.button !== 0 || event.target.closest("button")) return;
         event.preventDefault();
-        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, ox: state.x, oy: state.y };
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, ox: state.x, oy: state.y, moved: false };
         canvas.setPointerCapture(event.pointerId);
-        canvas.classList.add("is-panning");
       });
       canvas.addEventListener("pointermove", (event) => {
         if (!drag || drag.id !== event.pointerId) return;
+        if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 4) {
+          drag.moved = true;
+          canvas.classList.add("is-panning");
+        }
+        if (!drag.moved) return;
         state.x = drag.ox + event.clientX - drag.x;
         state.y = drag.oy + event.clientY - drag.y;
         apply();
       });
       const endDrag = (event) => {
-        if (drag && event.pointerId === drag.id) {
-          drag = null;
-          canvas.classList.remove("is-panning");
-        }
+        if (!drag || event.pointerId !== drag.id) return;
+        const moved = drag.moved;
+        drag = null;
+        canvas.classList.remove("is-panning");
+        if (!moved) setFilled(!canvas.classList.contains("is-filled"));
       };
       canvas.addEventListener("pointerup", endDrag);
       canvas.addEventListener("pointercancel", endDrag);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && canvas.classList.contains("is-filled")) setFilled(false);
+      });
       tools?.addEventListener("click", (event) => {
         const button = event.target.closest("button");
         const action = button?.dataset.canvasZoom;
         if (!action) return;
         const rect = canvas.getBoundingClientRect();
-        if (action === "fit") fit();
+        if (action === "fill") setFilled(!canvas.classList.contains("is-filled"));
+        else if (action === "fit") fit();
         else zoomAt(state.scale * (action === "in" ? 1.2 : 1 / 1.2), rect.width / 2, rect.height / 2);
       });
       fit();
@@ -339,6 +411,15 @@ function pageCss() {
     }
     .canvas text { user-select: none; -webkit-user-select: none; }
     .canvas.is-panning { cursor: grabbing; }
+    body.canvas-filled { overflow: hidden; }
+    .canvas.is-filled {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      height: auto;
+      border: 0;
+      border-radius: 0;
+    }
     .canvas-tools {
       position: absolute;
       top: 10px;

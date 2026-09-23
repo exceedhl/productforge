@@ -25,16 +25,24 @@ function renderLanes(picture) {
   return lanes
     .map((lane, index) => {
       const titleLines = lane.titleLines ?? [];
+      const local = Boolean(lane.local);
+      const x = local ? lane.x : 0;
+      const width = local ? lane.width : picture.width;
+      const titleX = local ? x + 10 : gutter / 2;
       const titleBlock = titleLines
         .map(
           (line, lineIndex) =>
-            `<text class="arch-lane-title" x="${gutter / 2}" y="${lane.titleTop + lineIndex * 16}" text-anchor="middle">${escapeHtml(line)}</text>`,
+            `<text class="arch-lane-title" x="${titleX}" y="${lane.titleTop + lineIndex * 16}" text-anchor="${local ? "start" : "middle"}">${escapeHtml(line)}</text>`,
         )
         .join("");
-      const divider = index === 0 ? "" : `<line class="arch-lane-divider" x1="0" y1="${lane.y}" x2="${picture.width}" y2="${lane.y}" />`;
+      const rail = local
+        ? ""
+        : `<rect class="arch-lane-rail layer-${lane.slug}" x="0" y="${lane.y}" width="${gutter}" height="${lane.height}" />`;
+      const divider =
+        local || index === 0 ? "" : `<line class="arch-lane-divider" x1="0" y1="${lane.y}" x2="${picture.width}" y2="${lane.y}" />`;
       return `
-      <rect class="arch-lane layer-${lane.slug}" x="0" y="${lane.y}" width="${picture.width}" height="${lane.height}" />
-      <rect class="arch-lane-rail layer-${lane.slug}" x="0" y="${lane.y}" width="${gutter}" height="${lane.height}" />
+      <rect class="arch-lane layer-${lane.slug}" x="${x}" y="${lane.y}" width="${width}" height="${lane.height}" />
+      ${rail}
       ${titleBlock}
       ${divider}`;
     })
