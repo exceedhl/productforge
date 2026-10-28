@@ -40,8 +40,8 @@
 先运行确定性索引，再让模型只阅读 Evidence Packet。模型不枚举文件、不猜测可静态解析的调用，也不编造行号。
 
 ```text
-node .agents/skills/productforge/scripts/understand/cli.ts index --root <目录>
-node .agents/skills/productforge/scripts/understand/cli.ts packet --index .productforge/understand/index --file <相对路径> --symbol <符号>
+node ~/.agents/skills/pf/scripts/understand/cli.ts index --root <目录>
+node ~/.agents/skills/pf/scripts/understand/cli.ts packet --index .productforge/understand/index --file <相对路径> --symbol <符号>
 ```
 
 索引可删除后重建。后续只重新解析内容哈希变化的文件。默认预算是 40 个文件、80 个符号、调用深度 4、2 个场景、4 张导览页；达到预算就交付当前结果，并列出尚未确认的内容。
@@ -323,9 +323,9 @@ Billing 是 Architectural Component：它通过注册入口暴露完整计费能
 Knowledge 使用 schema 2。除原有 `participants`、`relations`、`scenarios` 外，还有 `scopes`、`capabilities`、`algorithms`、`stateModels`、`claims`、`evidence`。`scopes.kind` 为 `scenario` 或 `area`。后续修改只提交 patch，不整份重写。
 
 ```text
-node .agents/skills/productforge/scripts/understand/cli.ts save --input <knowledge.json>
-node .agents/skills/productforge/scripts/understand/cli.ts apply --patch <knowledge-patch.json>
-node .agents/skills/productforge/scripts/understand/cli.ts render --input <knowledge.json> --view <view.json> --open
+node ~/.agents/skills/pf/scripts/understand/cli.ts save --input <knowledge.json>
+node ~/.agents/skills/pf/scripts/understand/cli.ts apply --patch <knowledge-patch.json>
+node ~/.agents/skills/pf/scripts/understand/cli.ts render --input <knowledge.json> --view <view.json> --open
 ```
 
 `graph.json` 仍是渲染投影。直接渲染 Knowledge 时，程序会把算法伪代码和状态模型投影成文字；只有 `participants` / `scenarios` 足够复杂时才画架构图和时序图。
@@ -335,7 +335,7 @@ node .agents/skills/productforge/scripts/understand/cli.ts render --input <knowl
 需要架构图或时序图时，模型只输出可校验的 JSON，不输出 HTML。HTML 是完整导览文档：章节按第 4 节组织，只有架构图和时序图用 SVG 嵌入。POC 实现放在 skill 目录，不写入产品包：
 
 ```text
-.agents/skills/productforge/scripts/understand/
+~/.agents/skills/pf/scripts/understand/
 ```
 
 IR 分为三部分：
@@ -351,9 +351,9 @@ IR 分为三部分：
 首轮把渲染用的 Walkthrough 写入 `.productforge/understand/graph.json`。语义事实写入 `.productforge/understand/knowledge.json`，不要把职责、算法和判断只留在 `graph.json`。后续只输出 `operations` patch，由程序合并。删除必须显式声明；漏写不代表删除。`removeParticipant` 在该参与方仍有子参与方时拒绝，要先删除或改挂子参与方。
 
 ```text
-node .agents/skills/productforge/scripts/understand/cli.ts save --input <snapshot.json>
-node .agents/skills/productforge/scripts/understand/cli.ts apply --patch <patch.json>
-node .agents/skills/productforge/scripts/understand/cli.ts render --store .productforge/understand/graph.json --open
+node ~/.agents/skills/pf/scripts/understand/cli.ts save --input <snapshot.json>
+node ~/.agents/skills/pf/scripts/understand/cli.ts apply --patch <patch.json>
+node ~/.agents/skills/pf/scripts/understand/cli.ts render --store .productforge/understand/graph.json --open
 ```
 
 也可以直接 `render --input <snapshot.json> --open`，跳过本地存储。存储或校验失败时，只在对话中继续结构化导览，不要改回手写 HTML。
